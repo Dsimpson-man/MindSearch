@@ -408,20 +408,16 @@ struct ContentView: View {
                     sentenceLine("搜索") { keywordField }
                 }
 
-                ZStack {
-                    HStack {
-                        micButton
-                        Spacer(minLength: 0)
-                    }
-
-                    submitButton
-
+                HStack(alignment: .center, spacing: 12) {
+                    micButton
+                    Spacer(minLength: 8)
                     if showIdeaHint {
                         Text("\(trimmedKeyword.count) 字 · 存为想法")
                             .font(Theme.mono(10))
                             .foregroundColor(Theme.faded)
-                            .offset(y: 50)
+                            .lineLimit(1)
                     }
+                    submitButton
                 }
                 .padding(.top, 4)
             }
