@@ -289,7 +289,7 @@ struct ContentView: View {
             }
         }
         .onChange(of: appeared) { ready in
-            guard ready, let pending = pendingWidgetLink else { return }
+            guard ready, pendingWidgetLink != nil else { return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                 if let link = pendingWidgetLink { applyWidgetLink(link) }
             }
