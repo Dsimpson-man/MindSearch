@@ -2,12 +2,14 @@ import SwiftUI
 import UIKit
 import WidgetKit
 
-// MARK: - 风格：米黄纸张 + 墨色 + 衬线 / 等宽
+// MARK: - 风格：暖雾白 + 炭墨 + 雾绿 + 衬线 / 等宽
 enum Theme {
-    static let paper = Color(red: 0.96, green: 0.93, blue: 0.85)
-    static let card = Color(red: 0.93, green: 0.89, blue: 0.80)
-    static let ink = Color(red: 0.17, green: 0.13, blue: 0.10)
-    static let faded = Color(red: 0.17, green: 0.13, blue: 0.10).opacity(0.5)
+    static let paper = Color(red: 0.957, green: 0.945, blue: 0.918)   // #F4F1EA 暖雾白
+    static let card = Color(red: 0.929, green: 0.914, blue: 0.874)    // #EDE9DF 柔米
+    static let ink = Color(red: 0.227, green: 0.212, blue: 0.188)     // #3A3630 炭墨
+    static let accent = Color(red: 0.420, green: 0.478, blue: 0.416)  // #6B7A6A 雾绿
+    static let faded = Color(red: 0.227, green: 0.212, blue: 0.188).opacity(0.42)
+    static let hairline = Color(red: 0.227, green: 0.212, blue: 0.188).opacity(0.10)
 
     static func mono(_ size: CGFloat, bold: Bool = false) -> Font {
         .system(size: size, weight: bold ? .bold : .regular, design: .monospaced)
@@ -22,13 +24,52 @@ enum Theme {
     }
 }
 
-/// 按下去会轻轻缩一下的按钮
+/// 按下去轻轻缩一下；慢一点，不弹
 struct PressableStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.94 : 1)
-            .animation(.spring(response: 0.25, dampingFraction: 0.7),
-                       value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.95 : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .animation(.easeInOut(duration: 0.28), value: configuration.isPressed)
+    }
+}
+
+/// 主按钮：待机时缓慢呼吸，有内容时收紧成实心圆
+private struct BreathingSubmitButton: View {
+    let active: Bool
+    let action: () -> Void
+
+    @State private var breathe = false
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(Theme.accent.opacity(active ? 0.10 : 0.04))
+                    .overlay(
+                        Circle().stroke(Theme.accent.opacity(active ? 0.28 : 0.14),
+                                        lineWidth: 0.8)
+                    )
+                    .frame(width: 72, height: 72)
+                    .scaleEffect(breathe && !active ? 1.08 : 0.96)
+
+                Circle()
+                    .fill(active ? Theme.accent : Theme.ink.opacity(0.72))
+                    .frame(width: 46, height: 46)
+
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(Theme.paper)
+            }
+        }
+        .buttonStyle(PressableStyle())
+        .accessibilityLabel("搜索或存为想法")
+        .onAppear {
+            withAnimation(.easeInOut(duration: 3.4).repeatForever(autoreverses: true)) {
+                breathe = true
+            }
+        }
+        .animation(.easeInOut(duration: 0.6), value: active)
     }
 }
 
@@ -40,7 +81,7 @@ private struct PaperBackground: View {
             Theme.paper
             Image(uiImage: Self.texture)
                 .resizable(resizingMode: .tile)
-                .opacity(0.55)
+                .opacity(0.32)
                 .blendMode(.multiply)
         }
         .ignoresSafeArea()
@@ -51,19 +92,19 @@ private struct PaperBackground: View {
         let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { context in
             let cg = context.cgContext
-            for _ in 0..<900 {
+            for _ in 0..<700 {
                 let x = CGFloat.random(in: 0..<size.width)
                 let y = CGFloat.random(in: 0..<size.height)
-                let alpha = CGFloat.random(in: 0.01...0.035)
-                cg.setFillColor(UIColor(red: 0.35, green: 0.28, blue: 0.20, alpha: alpha).cgColor)
+                let alpha = CGFloat.random(in: 0.006...0.018)
+                cg.setFillColor(UIColor(red: 0.23, green: 0.21, blue: 0.19, alpha: alpha).cgColor)
                 cg.fill(CGRect(x: x, y: y, width: 1, height: 1))
             }
             for _ in 0..<30 {
                 let x = CGFloat.random(in: 0..<size.width)
                 let y = CGFloat.random(in: 0..<size.height)
                 let width = CGFloat.random(in: 4...16)
-                let alpha = CGFloat.random(in: 0.01...0.02)
-                cg.setStrokeColor(UIColor(red: 0.35, green: 0.28, blue: 0.20, alpha: alpha).cgColor)
+                let alpha = CGFloat.random(in: 0.005...0.012)
+                cg.setStrokeColor(UIColor(red: 0.23, green: 0.21, blue: 0.19, alpha: alpha).cgColor)
                 cg.setLineWidth(0.6)
                 cg.move(to: CGPoint(x: x, y: y))
                 cg.addLine(to: CGPoint(x: x + width, y: y))
@@ -161,12 +202,15 @@ final class Store: ObservableObject {
     }
 }
 
-private enum ListTab: String, CaseIterable, Identifiable {
+private enum Screen: String, CaseIterable, Identifiable {
     case search = "搜索"
     case ideas = "想法"
     case history = "记录"
 
     var id: String { rawValue }
+
+    /// 底部只放这两个入口，搜索是常驻的根页面
+    static let secondary: [Screen] = [.ideas, .history]
 }
 
 private struct PendingWeb: Identifiable {
@@ -187,7 +231,7 @@ struct ContentView: View {
     @State private var keywordComposing = false
     @State private var appComposing = false
 
-    @State private var tab: ListTab = .search
+    @State private var screen: Screen = .search
     @State private var message: String? = nil
     @State private var showSettings = false
     @State private var pendingWeb: PendingWeb? = nil
@@ -225,11 +269,11 @@ struct ContentView: View {
                 VStack {
                     Spacer()
                     Text(msg)
-                        .font(Theme.mono(13))
+                        .font(Theme.mono(12))
                         .foregroundColor(Theme.paper)
-                        .padding(.horizontal, 16).padding(.vertical, 10)
-                        .background(Capsule().fill(Theme.ink))
-                        .padding(.bottom, 88)
+                        .padding(.horizontal, 16).padding(.vertical, 9)
+                        .background(Capsule().fill(Theme.accent))
+                        .padding(.bottom, 82)
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
@@ -251,11 +295,11 @@ struct ContentView: View {
                     .zIndex(4)
             }
         }
-        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: message)
-        .animation(.easeOut(duration: 0.18), value: showSettings)
-        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: showPanel)
-        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: tab)
-        .animation(.easeInOut(duration: 0.2), value: voice.isRecording)
+        .animation(.easeInOut(duration: 0.5), value: message)
+        .animation(.easeInOut(duration: 0.5), value: showSettings)
+        .animation(.easeInOut(duration: 0.6), value: showPanel)
+        .animation(.easeInOut(duration: 0.6), value: screen)
+        .animation(.easeInOut(duration: 0.45), value: voice.isRecording)
         .onChange(of: voice.isRecording) { recording in
             if recording {
                 pulse = false
@@ -268,7 +312,7 @@ struct ContentView: View {
             if store.useDefaultApp, appText.isEmpty, !store.defaultAppName.isEmpty {
                 appText = store.defaultAppName
             }
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) {
+            withAnimation(.easeInOut(duration: 0.9)) {
                 appeared = true
             }
             // 每次启动都聚焦应用槽；来自小组件时由 applyWidgetLink 决定焦点
@@ -307,30 +351,49 @@ struct ContentView: View {
     // MARK: - 顶部
 
     private var header: some View {
-        ZStack {
-            Text("MindSearch")
-                .font(Theme.serif(20))
-                .foregroundColor(Theme.ink)
-
-            HStack {
-                Spacer()
+        HStack {
+            if screen == .search {
+                Text("MINDSEARCH")
+                    .font(Theme.mono(10))
+                    .tracking(2.2)
+                    .foregroundColor(Theme.faded)
+            } else {
                 Button {
                     dismissKeyboard()
-                    showSettings = true
+                    screen = .search
                 } label: {
-                    Text("设置")
-                        .font(Theme.mono(12))
-                        .foregroundColor(Theme.ink)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Capsule().stroke(Theme.ink.opacity(0.25), lineWidth: 1))
+                    HStack(spacing: 5) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 11, weight: .semibold))
+                        Text("搜索")
+                            .font(Theme.mono(12))
+                    }
+                    .foregroundColor(Theme.faded)
+                    .frame(height: 36)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(PressableStyle())
+                .accessibilityLabel("返回搜索")
             }
+
+            Spacer()
+
+            Button {
+                dismissKeyboard()
+                showSettings = true
+            } label: {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.system(size: 13))
+                    .foregroundColor(Theme.faded)
+                    .frame(width: 36, height: 36)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(PressableStyle())
+            .accessibilityLabel("设置")
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 8)
-        .padding(.bottom, 4)
+        .padding(.horizontal, 22)
+        .padding(.top, 4)
+        .padding(.bottom, 0)
     }
 
     // MARK: - 一句话输入区（搜索标签页）
@@ -339,26 +402,32 @@ struct ContentView: View {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
 
-            VStack(alignment: .leading, spacing: 16) {
-                sentenceLine("用") { appField }
-                sentenceLine("搜索") { keywordField }
+            VStack(alignment: .leading, spacing: 30) {
+                VStack(alignment: .leading, spacing: 18) {
+                    sentenceLine("用") { appField }
+                    sentenceLine("搜索") { keywordField }
+                }
 
-                HStack(spacing: 12) {
-                    micButton
-                    Spacer(minLength: 8)
-                    if showIdeaHint {
-                        Text("\(trimmedKeyword.count) 字 · 回车存为想法")
-                            .font(Theme.mono(11))
-                            .foregroundColor(Theme.faded)
-                            .lineLimit(1)
+                ZStack {
+                    HStack {
+                        micButton
+                        Spacer(minLength: 0)
                     }
+
                     submitButton
+
+                    if showIdeaHint {
+                        Text("\(trimmedKeyword.count) 字 · 存为想法")
+                            .font(Theme.mono(10))
+                            .foregroundColor(Theme.faded)
+                            .offset(y: 50)
+                    }
                 }
                 .padding(.top, 4)
             }
             .opacity(appeared ? 1 : 0)
-            .offset(y: appeared ? 0 : 10)
-            .padding(.horizontal, 28)
+            .offset(y: appeared ? 0 : 12)
+            .padding(.horizontal, 32)
 
             Spacer(minLength: 0)
         }
@@ -366,19 +435,20 @@ struct ContentView: View {
     }
 
     private func sentenceLine<Content: View>(_ label: String,
-                                             size: CGFloat = 30,
+                                             size: CGFloat = 19,
                                              @ViewBuilder content: () -> Content) -> some View {
-        HStack(alignment: .center, spacing: 8) {
+        HStack(alignment: .center, spacing: 16) {
             Text(label)
                 .font(Theme.serif(size))
-                .foregroundColor(Theme.ink)
-            Text("（")
-                .font(Theme.serif(size + 6))
-                .foregroundColor(Theme.ink)
+                .foregroundColor(Theme.faded)
+                .frame(width: 40, alignment: .leading)
             content()
-            Text("）")
-                .font(Theme.serif(size + 6))
-                .foregroundColor(Theme.ink)
+        }
+        .padding(.bottom, 9)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Theme.hairline)
+                .frame(height: 0.5)
         }
     }
 
@@ -387,12 +457,12 @@ struct ContentView: View {
             text: $appText,
             focused: $appFocused,
             isComposing: $appComposing,
-            font: Theme.serifUIFont(28),
-            placeholder: "*app*",
+            font: Theme.serifUIFont(25),
+            placeholder: "应用名",
             ghost: appFocused ? ghost(for: appText) : nil,
             onSubmit: { confirmApp() }
         )
-        .frame(height: 46)
+        .frame(height: 42)
     }
 
     private var keywordField: some View {
@@ -400,119 +470,107 @@ struct ContentView: View {
             text: $keyword,
             isFocused: $keywordFocused,
             isComposing: $keywordComposing,
-            placeholder: "*关键词*",
-            font: Theme.serifUIFont(28),
+            placeholder: "想搜什么",
+            font: Theme.serifUIFont(25),
             returnKey: .search,
             onSubmit: { submit() },
             onHoldStart: { beginHoldVoice() },
             onHoldEnd: { endHoldVoice() }
         )
-        .frame(height: 46)
+        .frame(height: 42)
     }
 
     private var micButton: some View {
         Button {
             toggleVoice()
         } label: {
-            Image(systemName: voice.isRecording ? "stop.fill" : "mic.fill")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(voice.isRecording ? Theme.paper : Theme.ink)
-                .frame(width: 32, height: 32)
-                .background(Circle().fill(voice.isRecording ? Theme.ink : Color.clear))
-                .overlay(Circle().stroke(Theme.ink.opacity(0.3), lineWidth: 1))
+            Image(systemName: voice.isRecording ? "stop.fill" : "mic")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(voice.isRecording ? Theme.paper : Theme.accent)
+                .frame(width: 42, height: 42)
+                .background(Circle().fill(voice.isRecording ? Theme.accent : Color.clear))
+                .overlay(Circle().stroke(Theme.accent.opacity(0.35), lineWidth: 0.8))
         }
         .buttonStyle(PressableStyle())
         .accessibilityLabel(voice.isRecording ? "停止语音输入" : "语音输入")
     }
 
     private var submitButton: some View {
-        Button {
-            submit()
-        } label: {
-            Image(systemName: "arrow.right")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundColor(Theme.paper)
-                .frame(width: 36, height: 36)
-                .background(Circle().fill(Theme.ink))
-        }
-        .buttonStyle(PressableStyle())
-        .accessibilityLabel("搜索或存为想法")
+        BreathingSubmitButton(active: !trimmedKeyword.isEmpty) { submit() }
     }
 
     // MARK: - 底部搜索面板
 
     private var panelOverlay: some View {
         ZStack(alignment: .bottom) {
-            Theme.ink.opacity(0.18).ignoresSafeArea()
+            Theme.ink.opacity(0.10).ignoresSafeArea()
                 .onTapGesture { closePanel() }
 
             VStack(alignment: .leading, spacing: 14) {
                 Capsule()
-                    .fill(Theme.ink.opacity(0.2))
-                    .frame(width: 36, height: 4)
+                    .fill(Theme.ink.opacity(0.12))
+                    .frame(width: 32, height: 3)
                     .frame(maxWidth: .infinity)
-                    .padding(.bottom, 2)
+                    .padding(.bottom, 4)
                     .contentShape(Rectangle())
                     .gesture(DragGesture().onEnded { value in
                         if value.translation.height > 60 { closePanel() }
                     })
 
                 HStack {
-                    Text("去其他应用搜索")
-                        .font(Theme.mono(13))
-                        .foregroundColor(Theme.faded)
+                    Text("换个应用")
+                        .font(Theme.serif(17))
+                        .foregroundColor(Theme.ink)
                     Spacer()
                     Button("关闭") { closePanel() }
-                        .font(Theme.mono(12))
-                        .foregroundColor(Theme.ink)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Capsule().stroke(Theme.ink.opacity(0.3), lineWidth: 1))
+                        .font(Theme.mono(11))
+                        .foregroundColor(Theme.faded)
                         .buttonStyle(PressableStyle())
                 }
 
-                sentenceLine("用", size: 22) {
+                sentenceLine("用", size: 16) {
                     AppNameField(
                         text: $panelApp,
                         focused: $panelAppFocused,
                         isComposing: $panelAppComposing,
-                        font: Theme.serifUIFont(22),
-                        placeholder: "*app*",
+                        font: Theme.serifUIFont(21),
+                        placeholder: "应用名",
                         ghost: panelAppFocused ? ghost(for: panelApp) : nil,
                         onSubmit: { confirmPanelApp() }
                     )
-                    .frame(height: 40)
+                    .frame(height: 38)
                 }
 
-                sentenceLine("搜索", size: 22) {
+                sentenceLine("搜索", size: 16) {
                     UIKitTextField(
                         text: $panelKeyword,
                         isFocused: $panelKeywordFocused,
                         isComposing: $panelKeywordComposing,
-                        placeholder: "*关键词*",
-                        font: Theme.serifUIFont(22),
+                        placeholder: "想搜什么",
+                        font: Theme.serifUIFont(21),
                         returnKey: .search,
                         onSubmit: { panelSearch() }
                     )
-                    .frame(height: 40)
+                    .frame(height: 38)
                 }
 
                 HStack {
                     Spacer()
                     Button("搜索") { panelSearch() }
-                        .font(Theme.mono(15, bold: true))
+                        .font(Theme.mono(13, bold: true))
                         .foregroundColor(Theme.paper)
-                        .padding(.horizontal, 22)
-                        .padding(.vertical, 10)
-                        .background(Capsule().fill(Theme.ink))
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 11)
+                        .background(Capsule().fill(Theme.accent))
                         .buttonStyle(PressableStyle())
                 }
+                .padding(.top, 4)
             }
-            .padding(20)
-            .background(RoundedRectangle(cornerRadius: 26, style: .continuous).fill(Theme.paper))
-            .overlay(
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .stroke(Theme.ink.opacity(0.12), lineWidth: 1)
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(Theme.paper)
+                    .shadow(color: Theme.ink.opacity(0.10), radius: 24, x: 0, y: 8)
             )
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
@@ -524,22 +582,16 @@ struct ContentView: View {
     @ViewBuilder
     private var content: some View {
         ZStack {
-            switch tab {
+            switch screen {
             case .search:
                 sentenceArea
                     .transition(.opacity)
             case .ideas:
                 ideasList
-                    .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .scale(scale: 0.99)),
-                        removal: .opacity
-                    ))
+                    .transition(.opacity)
             case .history:
                 historyList
-                    .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .scale(scale: 0.99)),
-                        removal: .opacity
-                    ))
+                    .transition(.opacity)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -547,12 +599,12 @@ struct ContentView: View {
 
     private var ideasList: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 10) {
+            LazyVStack(alignment: .leading, spacing: 0) {
                 if store.ideas.isEmpty {
-                    emptyText("还没有想法。去搜索页写长一点，回车就会存下来。")
+                    emptyState("还没有想法。\n写长一点，回车就留在这里。")
                 }
                 ForEach(store.ideas) { idea in
-                    row(idea.text)
+                    listRow(idea.text)
                         .onTapGesture { openPanel(keyword: idea.text, app: store.defaultAppName) }
                         .contextMenu {
                             Button("删除", role: .destructive) {
@@ -568,90 +620,124 @@ struct ContentView: View {
                         }
                 }
             }
-            .padding(20)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 18)
         }
     }
 
     private var historyList: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 10) {
+            LazyVStack(alignment: .leading, spacing: 0) {
                 HStack {
                     Text("\(store.history.count) 条")
-                        .font(Theme.mono(12))
+                        .font(Theme.mono(10))
                         .foregroundColor(Theme.faded)
                     Spacer()
                     if !store.history.isEmpty {
                         Button("清空") { store.history.removeAll() }
-                            .font(Theme.mono(12))
+                            .font(Theme.mono(10))
                             .foregroundColor(Theme.faded)
                     }
                 }
+                .padding(.bottom, 4)
+
                 if store.history.isEmpty {
-                    emptyText("搜过的内容会自动出现在这里。")
+                    emptyState("搜过的内容会安静地留在这里。")
                 }
-                ForEach(store.history.prefix(50)) { h in
-                    row(h.text, trailing: h.app)
-                        .onTapGesture {
-                            let app = destinations.first(where: { $0.name == h.app })?.name
-                            openPanel(keyword: h.text, app: app ?? store.defaultAppName)
-                        }
-                        .contextMenu {
-                            Button("删除", role: .destructive) {
-                                store.history.removeAll { $0.id == h.id }
+
+                ForEach(historyGroups, id: \.title) { group in
+                    Text(group.title)
+                        .font(Theme.mono(9))
+                        .tracking(1.8)
+                        .foregroundColor(Theme.faded)
+                        .padding(.top, 20)
+                        .padding(.bottom, 4)
+
+                    ForEach(group.items) { h in
+                        listRow(h.text, trailing: h.app)
+                            .onTapGesture {
+                                let app = destinations.first(where: { $0.name == h.app })?.name
+                                openPanel(keyword: h.text, app: app ?? store.defaultAppName)
                             }
-                        }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                store.history.removeAll { $0.id == h.id }
-                            } label: {
-                                Label("删除", systemImage: "trash")
+                            .contextMenu {
+                                Button("删除", role: .destructive) {
+                                    store.history.removeAll { $0.id == h.id }
+                                }
                             }
-                        }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    store.history.removeAll { $0.id == h.id }
+                                } label: {
+                                    Label("删除", systemImage: "trash")
+                                }
+                            }
+                    }
                 }
             }
-            .padding(20)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 18)
         }
+    }
+
+    private struct HistoryGroup {
+        let title: String
+        let items: [HistoryItem]
+    }
+
+    private var historyGroups: [HistoryGroup] {
+        var today: [HistoryItem] = []
+        var yesterday: [HistoryItem] = []
+        var earlier: [HistoryItem] = []
+        for item in store.history.prefix(50) {
+            if Calendar.current.isDateInToday(item.date) {
+                today.append(item)
+            } else if Calendar.current.isDateInYesterday(item.date) {
+                yesterday.append(item)
+            } else {
+                earlier.append(item)
+            }
+        }
+        return [("今天", today), ("昨天", yesterday), ("更早", earlier)]
+            .filter { !$0.1.isEmpty }
+            .map { HistoryGroup(title: $0.0, items: $0.1) }
     }
 
     // MARK: - 底部标签
 
     private var tabBar: some View {
-        GeometryReader { geo in
-            let indices = Array(ListTab.allCases.indices)
-            let count = CGFloat(indices.count)
-            let centers = indices.map { geo.size.width * (CGFloat($0) * 2 + 1) / (count * 2) }
-            let selectedIndex = ListTab.allCases.firstIndex(of: tab) ?? 0
-
-            ZStack {
-                LiquidIndicator(centers: centers,
-                                selectedIndex: selectedIndex,
-                                height: geo.size.height)
-
-                HStack(spacing: 0) {
-                    ForEach(ListTab.allCases) { item in
-                        Button {
-                            dismissKeyboard()
-                            tab = item
-                        } label: {
-                            Text(item.rawValue)
-                                .font(Theme.mono(14, bold: tab == item))
-                                .foregroundColor(tab == item ? Theme.paper : Theme.faded)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(PressableStyle())
-                        .accessibilityLabel(item.rawValue)
-                        .accessibilityAddTraits(tab == item ? .isSelected : [])
+        HStack(spacing: 72) {
+            ForEach(Screen.secondary) { item in
+                let selected = screen == item
+                Button {
+                    dismissKeyboard()
+                    // 再点一次当前入口就回到搜索
+                    screen = selected ? .search : item
+                } label: {
+                    VStack(spacing: 5) {
+                        Circle()
+                            .fill(selected ? Theme.accent : Color.clear)
+                            .frame(width: 3, height: 3)
+                        Text(item.rawValue)
+                            .font(Theme.mono(12))
+                            .foregroundColor(selected ? Theme.accent : Theme.ink.opacity(0.48))
                     }
+                    .frame(minWidth: 64)
+                    .padding(.vertical, 10)
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(PressableStyle())
+                .accessibilityLabel(item.rawValue)
+                .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
-        .frame(height: 48)
+        .frame(maxWidth: .infinity)
+        .frame(height: 50)
         .background(Theme.paper)
-        .overlay(Rectangle().frame(height: 1).foregroundColor(Theme.ink.opacity(0.1)),
-                 alignment: .top)
-        .padding(.vertical, 8)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(Theme.hairline)
+                .frame(height: 0.5)
+        }
     }
 
     // MARK: - 解析
@@ -746,7 +832,7 @@ struct ContentView: View {
     }
 
     private func saveIdea(_ text: String) {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+        withAnimation(.easeInOut(duration: 0.55)) {
             store.ideas.insert(IdeaItem(text: text), at: 0)
             keyword = ""
         }
@@ -777,7 +863,7 @@ struct ContentView: View {
     private func closePanel() {
         panelKeywordFocused = false
         panelAppFocused = false
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+        withAnimation(.easeInOut(duration: 0.5)) {
             showPanel = false
         }
     }
@@ -864,7 +950,7 @@ struct ContentView: View {
         dismissKeyboard()
         showPanel = false
         showSettings = false
-        tab = .search
+        screen = .search
 
         if let name = link.appName {
             if let d = destinations.first(where: { $0.name == name }) {
@@ -956,25 +1042,39 @@ struct ContentView: View {
         UIImpactFeedbackGenerator(style: style).impactOccurred()
     }
 
-    // MARK: - 小组件
+    // MARK: - 列表行
 
-    private func row(_ text: String, trailing: String? = nil) -> some View {
-        HStack {
-            Text(text).font(Theme.mono(15)).foregroundColor(Theme.ink).lineLimit(2)
-            Spacer()
+    private func listRow(_ text: String, trailing: String? = nil) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(text)
+                .font(Theme.mono(14))
+                .foregroundColor(Theme.ink)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+            Spacer(minLength: 0)
             if let t = trailing {
-                Text(t).font(Theme.mono(12)).foregroundColor(Theme.faded)
+                Text(t)
+                    .font(Theme.mono(10))
+                    .foregroundColor(Theme.faded)
+                    .lineLimit(1)
             }
         }
-        .padding(14)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.card))
-        .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .padding(.vertical, 14)
+        .contentShape(Rectangle())
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Theme.hairline)
+                .frame(height: 0.5)
+        }
     }
 
-    private func emptyText(_ text: String) -> some View {
+    private func emptyState(_ text: String) -> some View {
         Text(text)
-            .font(Theme.mono(13))
+            .font(Theme.serif(16))
             .foregroundColor(Theme.faded)
+            .multilineTextAlignment(.center)
+            .lineSpacing(7)
+            .frame(maxWidth: .infinity, minHeight: 360, alignment: .center)
     }
 }
 

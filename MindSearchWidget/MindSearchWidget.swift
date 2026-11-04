@@ -170,7 +170,7 @@ private struct MediumHomeView: View {
                 .foregroundColor(WidgetPalette.paper)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(Capsule().fill(WidgetPalette.ink))
+                .background(Capsule().fill(WidgetPalette.accent))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 

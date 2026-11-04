@@ -60,7 +60,7 @@ struct UIKitTextField: UIViewRepresentable {
             string: placeholder,
             attributes: [
                 .font: font,
-                .foregroundColor: UIColor(Theme.faded)
+                .foregroundColor: UIColor(Theme.ink.opacity(0.28))
             ]
         )
 

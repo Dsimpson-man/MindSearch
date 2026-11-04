@@ -21,8 +21,8 @@ struct SettingsView: View {
                     .padding(.bottom, 16)
 
                 Rectangle()
-                    .fill(Theme.ink.opacity(0.12))
-                    .frame(height: 1)
+                    .fill(Theme.hairline)
+                    .frame(height: 0.5)
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 30) {
@@ -62,16 +62,16 @@ struct SettingsView: View {
     private var header: some View {
         HStack {
             Text("设置")
-                .font(Theme.mono(22, bold: true))
+                .font(Theme.serif(22))
                 .foregroundColor(Theme.ink)
             Spacer()
             Button(action: onClose) {
                 Text("关闭")
-                    .font(Theme.mono(13))
-                    .foregroundColor(Theme.ink)
-                    .padding(.horizontal, 12)
+                    .font(Theme.mono(11))
+                    .foregroundColor(Theme.faded)
                     .padding(.vertical, 8)
-                    .background(Capsule().stroke(Theme.ink, lineWidth: 1))
+                    .padding(.leading, 12)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(PressableStyle())
             .accessibilityLabel("关闭设置")
@@ -81,8 +81,8 @@ struct SettingsView: View {
     private var defaultAppSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionTitle("默认 APP")
-            Text("启用后，每次启动自动填入这个 APP 的名字。")
-                .font(Theme.mono(12))
+            Text("每次启动自动填入这个应用。")
+                .font(Theme.mono(11))
                 .foregroundColor(Theme.faded)
 
             toggleRow("启用默认 APP", isOn: $store.useDefaultApp)
@@ -116,8 +116,8 @@ struct SettingsView: View {
     private var thresholdSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionTitle("想法判定")
-            Text("超过这个字数，回车就当作想法存下来；短文本默认去搜索。")
-                .font(Theme.mono(12))
+            Text("超过这个字数，回车存为想法。")
+                .font(Theme.mono(11))
                 .foregroundColor(Theme.faded)
 
             HStack {
@@ -127,7 +127,7 @@ struct SettingsView: View {
                 Spacer()
                 Stepper("", value: $store.ideaThreshold, in: 10...40)
                     .labelsHidden()
-                    .tint(Theme.ink)
+                    .tint(Theme.accent)
             }
             .padding(.vertical, 4)
         }
@@ -136,8 +136,8 @@ struct SettingsView: View {
     private var aliasSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionTitle("别名")
-            Text("点一下改别名，长按改跳转 URL；别名用来识别输入。")
-                .font(Theme.mono(12))
+            Text("点一下改别名，长按改跳转地址。")
+                .font(Theme.mono(11))
                 .foregroundColor(Theme.faded)
 
             ForEach(AppCategory.allCases) { category in
@@ -181,12 +181,12 @@ struct SettingsView: View {
 
                                 if d.id != items.last?.id {
                                     Rectangle()
-                                        .fill(Theme.ink.opacity(0.08))
-                                        .frame(height: 1)
+                                        .fill(Theme.hairline)
+                                        .frame(height: 0.5)
                                 }
                             }
                         }
-                        .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .background(RoundedRectangle(cornerRadius: 14, style: .continuous)
                             .fill(Theme.card))
                     }
                 }
@@ -198,7 +198,8 @@ struct SettingsView: View {
 
     private func sectionTitle(_ text: String) -> some View {
         Text(text)
-            .font(Theme.mono(13))
+            .font(Theme.mono(10))
+            .tracking(1.6)
             .foregroundColor(Theme.faded)
     }
 
@@ -210,7 +211,7 @@ struct SettingsView: View {
             Spacer()
             Toggle("", isOn: isOn)
                 .labelsHidden()
-                .tint(Theme.ink)
+                .tint(Theme.accent)
         }
         .padding(.vertical, 4)
     }
@@ -219,7 +220,7 @@ struct SettingsView: View {
         if let alias = store.aliases[d.name], !alias.isEmpty {
             return alias
         }
-        return "设置别名"
+        return "＋"
     }
 
     // MARK: - 别名编辑
@@ -325,11 +326,11 @@ private struct URLTemplateEditor: View {
                         .foregroundColor(Theme.faded)
 
                     Button("保存") { onSave(draft) }
-                        .font(Theme.mono(14, bold: true))
+                        .font(Theme.mono(13, bold: true))
                         .foregroundColor(Theme.paper)
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 9)
-                        .background(Capsule().fill(Theme.ink))
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Capsule().fill(Theme.accent))
                 }
             }
             .padding(20)

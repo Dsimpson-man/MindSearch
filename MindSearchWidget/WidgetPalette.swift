@@ -2,10 +2,11 @@ import SwiftUI
 
 /// 和主 App 一致的纸张 / 墨色，单独定义一份，避免把整个 ContentView 编进 Extension。
 enum WidgetPalette {
-    static let paper = Color(red: 0.96, green: 0.93, blue: 0.85)
-    static let card = Color(red: 0.91, green: 0.87, blue: 0.78)
-    static let ink = Color(red: 0.17, green: 0.13, blue: 0.10)
-    static let faded = Color(red: 0.17, green: 0.13, blue: 0.10).opacity(0.55)
+    static let paper = Color(red: 0.957, green: 0.945, blue: 0.918)   // #F4F1EA 暖雾白
+    static let card = Color(red: 0.929, green: 0.914, blue: 0.874)    // #EDE9DF 柔米
+    static let ink = Color(red: 0.227, green: 0.212, blue: 0.188)     // #3A3630 炭墨
+    static let accent = Color(red: 0.420, green: 0.478, blue: 0.416)  // #6B7A6A 雾绿
+    static let faded = Color(red: 0.227, green: 0.212, blue: 0.188).opacity(0.42)
 
     static func mono(_ size: CGFloat, bold: Bool = false) -> Font {
         .system(size: size, weight: bold ? .bold : .regular, design: .monospaced)

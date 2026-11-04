@@ -60,6 +60,8 @@
 	<string>用语音把想法说进输入框。</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>把你说的话转成文字，方便直接搜索或存为想法。</string>
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
