@@ -88,7 +88,7 @@ v2.0 起是冥想化的安静风格：暖雾白底、炭墨字、雾绿强调，
 | 购物 | 天猫 | `tmall://page.tm/search?q={q}` |
 | 购物 | 京东 | `openapp.jdmobile://virtual?params={JSON}` |
 | 购物 | 拼多多 | `pinduoduo://yangkeduo.com/search_result.html?search_key={q}` |
-| 购物 | 闲鱼 | `fleamarket://searchResult?keyword={q}` + 剪贴板兜底 |
+| 购物 | 闲鱼 | `fleamarket://` + 剪贴板（官方没有搜索 scheme） |
 | 生活服务 | 美团 | `imeituan://www.meituan.com/search?q={q}` |
 | 生活服务 | 大众点评 | `dianping://searchshoplist?keyword={q}` |
 | 生活服务 | 饿了么 | `eleme://search?keyword={q}` |

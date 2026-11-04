@@ -155,10 +155,10 @@ let destinations: [Destination] = [
     destination("拼多多", .shopping, "pinduoduo",
                 app: "pinduoduo://yangkeduo.com/search_result.html?search_key={q}",
                 web: "https://mobile.yangkeduo.com/search_result.html?search_key={q}"),
-    // 闲鱼的搜索 scheme 没有官方文档，searchResult 是社区里最接近的写法；
-    // 同时开剪贴板兜底：即使 App 没接住参数，打开后也能直接粘贴。
+    // 闲鱼没有公开的搜索 scheme（search / searchResult 实测都不进搜索页），
+    // 所以只负责打开 App，关键词走剪贴板，进去点搜索框粘贴。
     destination("闲鱼", .shopping, "fleamarket",
-                app: "fleamarket://searchResult?keyword={q}",
+                app: "fleamarket://",
                 web: "https://www.goofish.com/search?q={q}",
                 copy: true),
 

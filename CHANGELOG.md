@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v2.1.1 — 闲鱼改为剪贴板（2026-11-05）
+
+- 闲鱼没有公开的搜索 scheme（`search` / `searchResult` 实测都进不了搜索页），改成 `fleamarket://` 只打开 App + 复制关键词，进去点搜索框粘贴。
+- 网页兜底保持 `https://www.goofish.com/search?q={q}`。
+
 ## v2.1.0 — 首次引导 + 深色模式（2026-11-05）
 
 ### 新增
