@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import WidgetKit
 
 // MARK: - 风格：米黄纸张 + 墨色 + 衬线 / 等宽
 enum Theme {
@@ -111,11 +112,37 @@ final class Store: ObservableObject {
         }
         if let d = UserDefaults.standard.data(forKey: "urlOverrides"),
            let v = try? JSONDecoder().decode([String: String].self, from: d) { urlOverrides = v }
+
+        // 老用户升级后第一次启动，把已有数据补进 App Group，小组件不会空白
+        SharedData.bootstrapIfNeeded(
+            recentApps: SharedData.recentApps(from: history.map { ($0.text, $0.app) }),
+            lastKeyword: history.first?.text,
+            lastApp: history.first?.app.replacingOccurrences(of: " · 网页", with: ""),
+            aliases: aliases,
+            defaultAppName: defaultAppName,
+            useDefaultApp: useDefaultApp,
+            urlOverrides: urlOverrides
+        )
+    }
+
+    /// 把小组件需要的数据同步到 App Group，然后刷新时间线
+    func publishToWidget() {
+        SharedData.publish(
+            recentApps: SharedData.recentApps(from: history.map { ($0.text, $0.app) }),
+            lastKeyword: history.first?.text,
+            lastApp: history.first?.app.replacingOccurrences(of: " · 网页", with: ""),
+            aliases: aliases,
+            defaultAppName: defaultAppName,
+            useDefaultApp: useDefaultApp,
+            urlOverrides: urlOverrides
+        )
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func save() {
         if let d = try? JSONEncoder().encode(ideas) { UserDefaults.standard.set(d, forKey: "ideas") }
         if let d = try? JSONEncoder().encode(history) { UserDefaults.standard.set(d, forKey: "history") }
+        publishToWidget()
     }
 
     private func saveSettings() {
@@ -123,12 +150,14 @@ final class Store: ObservableObject {
         UserDefaults.standard.set(defaultAppName, forKey: "defaultAppName")
         UserDefaults.standard.set(useDefaultApp, forKey: "useDefaultApp")
         UserDefaults.standard.set(ideaThreshold, forKey: "ideaThreshold")
+        publishToWidget()
     }
 
     private func saveURLOverrides() {
         if let d = try? JSONEncoder().encode(urlOverrides) {
             UserDefaults.standard.set(d, forKey: "urlOverrides")
         }
+        publishToWidget()
     }
 }
 
@@ -174,6 +203,9 @@ struct ContentView: View {
     @State private var voiceBase = ""
     @State private var pulse = false
     @State private var appeared = false
+
+    // 小组件传进来的动作，等界面就绪后再执行
+    @State private var pendingWidgetLink: WidgetDeepLink? = nil
 
     @Namespace private var tabNamespace
 
@@ -239,12 +271,29 @@ struct ContentView: View {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) {
                 appeared = true
             }
-            // 每次启动都聚焦应用槽
+            // 每次启动都聚焦应用槽；来自小组件时由 applyWidgetLink 决定焦点
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                if !showPanel && !showSettings { appFocused = true }
+                guard pendingWidgetLink == nil,
+                      !keywordFocused,
+                      !showPanel && !showSettings else { return }
+                appFocused = true
             }
         }
         .onDisappear { voice.stop() }
+        .onOpenURL { url in
+            guard let link = WidgetDeepLink(url: url) else { return }
+            pendingWidgetLink = link
+            // 等界面就绪后统一处理；applyWidgetLink 会清空 pending，不会重复执行
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                if let pending = pendingWidgetLink { applyWidgetLink(pending) }
+            }
+        }
+        .onChange(of: appeared) { ready in
+            guard ready, let pending = pendingWidgetLink else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                if let link = pendingWidgetLink { applyWidgetLink(link) }
+            }
+        }
         .alert(item: $pendingWeb) { pending in
             Alert(
                 title: Text("没装 \(pending.destination.name)"),
@@ -793,6 +842,50 @@ struct ContentView: View {
 
     private func endHoldVoice() {
         voice.stop()
+    }
+
+    // MARK: - 小组件唤起
+
+    /// 处理小组件传进来的链接；执行过一次就清掉，避免重复跳转
+    private func applyWidgetLink(_ link: WidgetDeepLink) {
+        pendingWidgetLink = nil
+        dismissKeyboard()
+        showPanel = false
+        showSettings = false
+        tab = .search
+
+        if let name = link.appName {
+            if let d = destinations.first(where: { $0.name == name }) {
+                appText = d.name
+            } else {
+                appText = name
+                flash("没找到 \(name)")
+                return
+            }
+        } else if store.useDefaultApp, !store.defaultAppName.isEmpty {
+            appText = store.defaultAppName
+        } else {
+            appText = ""
+        }
+
+        if let keyword = link.keyword {
+            self.keyword = keyword
+            guard let d = resolveApp(appText) else {
+                flash("没找到这个应用")
+                appFocused = true
+                return
+            }
+            if link.forceWeb {
+                openWeb(PendingWeb(destination: d, text: keyword))
+            } else {
+                search(d, keyword)
+            }
+        } else {
+            // 没带关键词：只把应用填好，聚焦关键词框，等用户输入
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                keywordFocused = true
+            }
+        }
     }
 
     private func resolvedURL(for d: Destination, text: String, web: Bool) -> URL? {

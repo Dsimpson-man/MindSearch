@@ -1,14 +1,43 @@
-# JumpSearch（一键搜索）
+# MindSearch（一键搜索）
 
-SwiftUI 小工具：输入关键词（或直接说），选一个 App，跳到它的搜索结果。想法和搜索记录存在本地。
+SwiftUI 小工具：输入关键词（或直接说），选一个 App，跳到它的搜索结果。想法和搜索记录存在本地。**v1.1 起带主屏和锁屏小组件。**
 
 ## 跑起来
 
-1. 打开 `JumpSearch.xcodeproj`。
-2. 真机运行前，在 target → Signing & Capabilities 里确认 Team（工程里已配 `JLJH3T9W5A`，Bundle ID 是 `com.humengdie.JumpSearch`，可改）。
-3. 选 iPhone 运行。第一次需要在手机上「设置 → 通用 → VPN与设备管理」信任开发者。
+1. 打开 `JumpSearch.xcodeproj`（工程名沿用旧名，App 显示名是 MindSearch）。
+2. 真机运行前，在**两个** target 的 Signing & Capabilities 里确认是同一个 Team（工程里已配 `JLJH3T9W5A`）：
+   - 主 App：`com.humengdie.JumpSearch`
+   - 小组件：`com.humengdie.JumpSearch.Widget`
+3. 两个 target 都要打开 **App Groups** 能力，并勾上同一个组 `group.com.humengdie.JumpSearch.shared`（entitlements 文件已经写好，Xcode 首次可能需要在 Capabilities 里点一下让它注册到开发者账号）。
+4. 选 iPhone 运行。第一次需要在手机上「设置 → 通用 → VPN与设备管理」信任开发者。
 
-模拟器里没有这些 App，跳转只能在真机上验证；模拟器可以看界面和交互。
+模拟器里没有这些 App，跳转只能在真机上验证；模拟器可以看界面和交互，也能预览小组件布局。
+
+## 桌面 / 锁屏小组件（v1.1）
+
+长按桌面 → 编辑 → 添加小组件 → 搜「MindSearch」，会看到两种：
+
+| 名称 | 支持尺寸 | 内容 |
+| --- | --- | --- |
+| MindSearch 快速搜索 | 小 / 中 / 大 | 最近常用的 4 个应用（不足时补 小红书 / B 站 / 抖音 / 知乎），每个都是独立点击区 |
+| MindSearch 锁屏 | 圆形 / 矩形 / 单行 | 最近用的第一个应用 + 最近一次搜索的关键词 |
+
+交互逻辑：
+
+- **点某个应用块** → 唤起 MindSearch 本体，自动填好这个应用名并聚焦关键词框，输入完直接搜。
+- **点小组件空白处** → 只打开主 App，聚焦应用槽，走原来那套一句话输入。
+- **大号组件的「最近搜过」条** → 带关键词，唤起主 App 后直接执行跳转（不用再打字）。
+- 主 App 每次搜索、改设置、改别名 / URL 都会刷新小组件时间线；从没搜过也会显示一排常用应用，不会空白。
+
+**一个绕不开的限制**：Widget Extension 里没有 `UIApplication.shared`，系统不允许它直接打开小红书等第三方 App。所以点击一律先唤起 MindSearch 本体，再由本体完成跳转——这一步多一次转场，但换来的是完全不用手动配置快捷指令。锁屏组件同理，点击后会要求解锁并进入主 App。
+
+数据通路：主 App 写 App Group（`SharedData.swift`）→ Widget 只读 → `mindsearch://search?app=…&q=…` 回传（`WidgetDeepLink.swift` 解析）。
+
+## 已知问题
+
+- 第三方 App 深链是私有约定，可能随对方版本升级失效；设置里长按应用可改 URL。
+- DeepSeek 的 `dpsk://` 只能唤起 App，不能带文本（「问问 DeepSeek」是 App Intent，不是 URL scheme）。
+- 锁屏组件点击后需要解锁，无法在锁屏状态下直接完成跳转。
 
 ## 界面
 
@@ -73,5 +102,13 @@ SwiftUI 小工具：输入关键词（或直接说），选一个 App，跳到�
 ## 命令行编译
 
 ```bash
-xcodebuild -project JumpSearch.xcodeproj -target JumpSearch -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+xcodebuild -project JumpSearch.xcodeproj -scheme JumpSearch -sdk iphonesimulator -configuration Debug -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build
 ```
+
+用 `-scheme`（不要用 `-target`），这样 Xcode 会自动先编 widget extension 再嵌入主 App。
+
+## Roadmap
+
+- [ ] 真机逐条验证所有第三方深链，失效的改成网页兜底或只唤起 App
+- [ ] 小组件支持用户自己选固定哪 4 个应用（现在跟着「最近使用」走）
+- [ ] 想法 / 记录同步到 iCloud（现在只在本地）

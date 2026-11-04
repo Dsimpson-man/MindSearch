@@ -16,7 +16,28 @@
 		A10000000000000000000020 /* Metaball.metal in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001F /* Metaball.metal */; };
 		A10000000000000000000022 /* MetaballView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000021 /* MetaballView.swift */; };
 		A10000000000000000000024 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* Assets.xcassets */; };
+		A20000000000000000000001 /* SharedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* SharedData.swift */; };
+		A20000000000000000000002 /* WidgetDeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* WidgetDeepLink.swift */; };
+		A20000000000000000000003 /* SharedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* SharedData.swift */; };
+		A20000000000000000000004 /* Destinations.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000017 /* Destinations.swift */; };
+		A20000000000000000000005 /* MindSearchWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* MindSearchWidget.swift */; };
+		A20000000000000000000006 /* WidgetPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* WidgetPalette.swift */; };
+		A20000000000000000000007 /* MindSearchWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* MindSearchWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A20000000000000000000030 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A20000000000000000000007 /* MindSearchWidget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A10000000000000000000006 /* JumpSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JumpSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -30,10 +51,25 @@
 		A1000000000000000000001F /* Metaball.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Metaball.metal; sourceTree = "<group>"; };
 		A10000000000000000000021 /* MetaballView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaballView.swift; sourceTree = "<group>"; };
 		A10000000000000000000023 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A20000000000000000000011 /* SharedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedData.swift; sourceTree = "<group>"; };
+		A20000000000000000000012 /* WidgetDeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDeepLink.swift; sourceTree = "<group>"; };
+		A20000000000000000000013 /* MindSearchWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindSearchWidget.swift; sourceTree = "<group>"; };
+		A20000000000000000000014 /* WidgetPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetPalette.swift; sourceTree = "<group>"; };
+		A20000000000000000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A20000000000000000000016 /* JumpSearch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JumpSearch.entitlements; sourceTree = "<group>"; };
+		A20000000000000000000017 /* MindSearchWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MindSearchWidget.entitlements; sourceTree = "<group>"; };
+		A20000000000000000000020 /* MindSearchWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MindSearchWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A1000000000000000000000D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A20000000000000000000031 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -47,6 +83,7 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000004 /* JumpSearch */,
+				A20000000000000000000018 /* MindSearchWidget */,
 				A10000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -55,6 +92,7 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000006 /* JumpSearch.app */,
+				A20000000000000000000020 /* MindSearchWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,10 +108,24 @@
 				A1000000000000000000001D /* UIKitTextField.swift */,
 				A1000000000000000000001F /* Metaball.metal */,
 				A10000000000000000000021 /* MetaballView.swift */,
+				A20000000000000000000011 /* SharedData.swift */,
+				A20000000000000000000012 /* WidgetDeepLink.swift */,
+				A20000000000000000000016 /* JumpSearch.entitlements */,
 				A10000000000000000000023 /* Assets.xcassets */,
 				A10000000000000000000009 /* Info.plist */,
 			);
 			path = JumpSearch;
+			sourceTree = "<group>";
+		};
+		A20000000000000000000018 /* MindSearchWidget */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000013 /* MindSearchWidget.swift */,
+				A20000000000000000000014 /* WidgetPalette.swift */,
+				A20000000000000000000017 /* MindSearchWidget.entitlements */,
+				A20000000000000000000015 /* Info.plist */,
+			);
+			path = MindSearchWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -86,15 +138,33 @@
 				A1000000000000000000000C /* Sources */,
 				A1000000000000000000000D /* Frameworks */,
 				A1000000000000000000000E /* Resources */,
+				A20000000000000000000030 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A20000000000000000000040 /* PBXTargetDependency */,
 			);
 			name = JumpSearch;
 			productName = JumpSearch;
 			productReference = A10000000000000000000006 /* JumpSearch.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A20000000000000000000021 /* MindSearchWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A20000000000000000000050 /* Build configuration list for PBXNativeTarget "MindSearchWidgetExtension" */;
+			buildPhases = (
+				A20000000000000000000032 /* Sources */,
+				A20000000000000000000031 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MindSearchWidgetExtension;
+			productName = MindSearchWidgetExtension;
+			productReference = A20000000000000000000020 /* MindSearchWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -107,6 +177,9 @@
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					A10000000000000000000005 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					A20000000000000000000021 = {
 						CreatedOnToolsVersion = 26.0;
 					};
 				};
@@ -125,6 +198,7 @@
 			projectRoot = "";
 			targets = (
 				A10000000000000000000005 /* JumpSearch */,
+				A20000000000000000000021 /* MindSearchWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -153,10 +227,41 @@
 				A1000000000000000000001E /* UIKitTextField.swift in Sources */,
 				A10000000000000000000020 /* Metaball.metal in Sources */,
 				A10000000000000000000022 /* MetaballView.swift in Sources */,
+				A20000000000000000000001 /* SharedData.swift in Sources */,
+				A20000000000000000000002 /* WidgetDeepLink.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A20000000000000000000032 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A20000000000000000000003 /* SharedData.swift in Sources */,
+				A20000000000000000000004 /* Destinations.swift in Sources */,
+				A20000000000000000000005 /* MindSearchWidget.swift in Sources */,
+				A20000000000000000000006 /* WidgetPalette.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A20000000000000000000040 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A20000000000000000000021 /* MindSearchWidgetExtension */;
+			targetProxy = A20000000000000000000041 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		A20000000000000000000041 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A10000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A20000000000000000000021;
+			remoteInfo = MindSearchWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin XCBuildConfiguration section */
 		A10000000000000000000011 /* Debug */ = {
@@ -210,9 +315,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = JumpSearch/JumpSearch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JLJH3T9W5A;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -221,7 +327,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -234,9 +340,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = JumpSearch/JumpSearch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JLJH3T9W5A;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -245,9 +352,59 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A20000000000000000000051 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MindSearchWidget/MindSearchWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JLJH3T9W5A;
+				CURRENT_PROJECT_VERSION = 2;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MindSearchWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch.Widget;
+				PRODUCT_NAME = MindSearchWidget;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A20000000000000000000052 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MindSearchWidget/MindSearchWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JLJH3T9W5A;
+				CURRENT_PROJECT_VERSION = 2;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MindSearchWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch.Widget;
+				PRODUCT_NAME = MindSearchWidget;
+				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -271,6 +428,15 @@
 			buildConfigurations = (
 				A10000000000000000000013 /* Debug */,
 				A10000000000000000000014 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A20000000000000000000050 /* Build configuration list for PBXNativeTarget "MindSearchWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A20000000000000000000051 /* Debug */,
+				A20000000000000000000052 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
