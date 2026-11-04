@@ -2,14 +2,51 @@ import SwiftUI
 import UIKit
 import WidgetKit
 
-// MARK: - 风格：暖雾白 + 炭墨 + 雾绿 + 衬线 / 等宽
+// MARK: - 风格：暖雾白 / 暖黑，炭墨与雾绿，衬线 / 等宽
 enum Theme {
-    static let paper = Color(red: 0.957, green: 0.945, blue: 0.918)   // #F4F1EA 暖雾白
-    static let card = Color(red: 0.929, green: 0.914, blue: 0.874)    // #EDE9DF 柔米
-    static let ink = Color(red: 0.227, green: 0.212, blue: 0.188)     // #3A3630 炭墨
-    static let accent = Color(red: 0.420, green: 0.478, blue: 0.416)  // #6B7A6A 雾绿
-    static let faded = Color(red: 0.227, green: 0.212, blue: 0.188).opacity(0.42)
-    static let hairline = Color(red: 0.227, green: 0.212, blue: 0.188).opacity(0.10)
+    static let paper = dynamic(light: (0.957, 0.945, 0.918),   // #F4F1EA 暖雾白
+                               dark:  (0.110, 0.102, 0.090))   // #1C1A17 暖黑
+    static let card = dynamic(light: (0.929, 0.914, 0.874),    // #EDE9DF 柔米
+                              dark:  (0.149, 0.137, 0.122))    // #262320
+    static let ink = dynamic(light: (0.227, 0.212, 0.188),     // #3A3630 炭墨
+                             dark:  (0.929, 0.910, 0.874))     // #EDE8DF 暖白
+    static let accent = dynamic(light: (0.420, 0.478, 0.416),  // #6B7A6A 雾绿
+                                dark:  (0.659, 0.710, 0.627))  // #A8B5A0 亮雾绿
+    static let faded = ink.opacity(0.42)
+    static let hairline = ink.opacity(0.10)
+
+    private static func dynamic(light: (CGFloat, CGFloat, CGFloat),
+                                dark: (CGFloat, CGFloat, CGFloat)) -> Color {
+        Color(UIColor { trait in
+            let c = trait.userInterfaceStyle == .dark ? dark : light
+            return UIColor(red: c.0, green: c.1, blue: c.2, alpha: 1)
+        })
+    }
+
+    /// UIKit 控件用（UIColor(Color) 不会跟随深色模式，必须用动态 UIColor）
+    static var inkUIColor: UIColor {
+        UIColor { trait in
+            trait.userInterfaceStyle == .dark
+            ? UIColor(red: 0.929, green: 0.910, blue: 0.874, alpha: 1)
+            : UIColor(red: 0.227, green: 0.212, blue: 0.188, alpha: 1)
+        }
+    }
+
+    static var accentUIColor: UIColor {
+        UIColor { trait in
+            trait.userInterfaceStyle == .dark
+            ? UIColor(red: 0.659, green: 0.710, blue: 0.627, alpha: 1)
+            : UIColor(red: 0.420, green: 0.478, blue: 0.416, alpha: 1)
+        }
+    }
+
+    static var placeholderUIColor: UIColor {
+        UIColor { trait in
+            trait.userInterfaceStyle == .dark
+            ? UIColor(red: 0.929, green: 0.910, blue: 0.874, alpha: 0.28)
+            : UIColor(red: 0.227, green: 0.212, blue: 0.188, alpha: 0.28)
+        }
+    }
 
     static func mono(_ size: CGFloat, bold: Bool = false) -> Font {
         .system(size: size, weight: bold ? .bold : .regular, design: .monospaced)
@@ -76,12 +113,14 @@ private struct BreathingSubmitButton: View {
 // MARK: - 纸张底纹
 
 private struct PaperBackground: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         ZStack {
             Theme.paper
             Image(uiImage: Self.texture)
                 .resizable(resizingMode: .tile)
-                .opacity(0.32)
+                .opacity(colorScheme == .dark ? 0.10 : 0.32)
                 .blendMode(.multiply)
         }
         .ignoresSafeArea()
@@ -251,6 +290,8 @@ struct ContentView: View {
     // 小组件传进来的动作，等界面就绪后再执行
     @State private var pendingWidgetLink: WidgetDeepLink? = nil
 
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+
     @Namespace private var tabNamespace
 
     var body: some View {
@@ -294,6 +335,19 @@ struct ContentView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .zIndex(4)
             }
+
+            if !hasSeenOnboarding {
+                OnboardingView {
+                    withAnimation(.easeInOut(duration: 0.6)) {
+                        hasSeenOnboarding = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        appFocused = true
+                    }
+                }
+                .transition(.opacity)
+                .zIndex(20)
+            }
         }
         .animation(.easeInOut(duration: 0.5), value: message)
         .animation(.easeInOut(duration: 0.5), value: showSettings)
@@ -315,9 +369,10 @@ struct ContentView: View {
             withAnimation(.easeInOut(duration: 0.9)) {
                 appeared = true
             }
-            // 每次启动都聚焦应用槽；来自小组件时由 applyWidgetLink 决定焦点
+            // 每次启动都聚焦应用槽；引导、小组件、面板打开时不抢焦点
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                guard pendingWidgetLink == nil,
+                guard hasSeenOnboarding,
+                      pendingWidgetLink == nil,
                       !keywordFocused,
                       !showPanel && !showSettings else { return }
                 appFocused = true

@@ -20,8 +20,8 @@ struct UIKitTextField: UIViewRepresentable {
         let field = UITextField()
         field.delegate = context.coordinator
         field.font = font
-        field.textColor = UIColor(Theme.ink)
-        field.tintColor = UIColor(Theme.ink)
+        field.textColor = Theme.inkUIColor
+        field.tintColor = Theme.accentUIColor
         field.returnKeyType = returnKey
         field.autocorrectionType = .no
         field.autocapitalizationType = .none
@@ -60,7 +60,7 @@ struct UIKitTextField: UIViewRepresentable {
             string: placeholder,
             attributes: [
                 .font: font,
-                .foregroundColor: UIColor(Theme.ink.opacity(0.28))
+                .foregroundColor: Theme.placeholderUIColor
             ]
         )
 

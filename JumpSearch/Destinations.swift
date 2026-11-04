@@ -155,9 +155,12 @@ let destinations: [Destination] = [
     destination("拼多多", .shopping, "pinduoduo",
                 app: "pinduoduo://yangkeduo.com/search_result.html?search_key={q}",
                 web: "https://mobile.yangkeduo.com/search_result.html?search_key={q}"),
+    // 闲鱼的搜索 scheme 没有官方文档，searchResult 是社区里最接近的写法；
+    // 同时开剪贴板兜底：即使 App 没接住参数，打开后也能直接粘贴。
     destination("闲鱼", .shopping, "fleamarket",
-                app: "fleamarket://search?keyword={q}",
-                web: "https://www.goofish.com/search?q={q}"),
+                app: "fleamarket://searchResult?keyword={q}",
+                web: "https://www.goofish.com/search?q={q}",
+                copy: true),
 
     // 生活服务
     destination("美团", .life, "imeituan",

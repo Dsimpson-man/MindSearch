@@ -55,6 +55,8 @@ v2.0 起是冥想化的安静风格：暖雾白底、炭墨字、雾绿强调，
 - 没装对应 App 时弹窗询问，可用网页搜索兜底。
 - 右上角图标进设置：默认 APP、想法判定字数、每个 APP 的别名与跳转地址。
 - 所有动效是 0.45–0.9 秒的 `easeInOut`，不用弹跳。
+- **深色模式**跟随系统：暖黑底、暖白字、亮雾绿，主 App 和小组件同步。
+- **首次打开**有三页引导，讲一句话搜索、`XH = 小红书`、长文本存想法；只看一次。
 
 ## 输入识别
 
@@ -86,7 +88,7 @@ v2.0 起是冥想化的安静风格：暖雾白底、炭墨字、雾绿强调，
 | 购物 | 天猫 | `tmall://page.tm/search?q={q}` |
 | 购物 | 京东 | `openapp.jdmobile://virtual?params={JSON}` |
 | 购物 | 拼多多 | `pinduoduo://yangkeduo.com/search_result.html?search_key={q}` |
-| 购物 | 闲鱼 | `fleamarket://search?keyword={q}` |
+| 购物 | 闲鱼 | `fleamarket://searchResult?keyword={q}` + 剪贴板兜底 |
 | 生活服务 | 美团 | `imeituan://www.meituan.com/search?q={q}` |
 | 生活服务 | 大众点评 | `dianping://searchshoplist?keyword={q}` |
 | 生活服务 | 饿了么 | `eleme://search?keyword={q}` |

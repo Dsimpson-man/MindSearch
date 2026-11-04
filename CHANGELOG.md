@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## v2.1.0 — 首次引导 + 深色模式（2026-11-05）
+
+### 新增
+
+- **首次引导**：三页，讲清楚「一句话搜索」「XH = 小红书」「长文本存想法」。用 `@AppStorage("hasSeenOnboarding")` 记录，只看一次。
+- **深色模式**：暖黑 `#1C1A17` / 卡片 `#262320` / 暖白字 `#EDE8DF` / 亮雾绿 `#A8B5A0`。跟随系统切换，主 App 和小组件同步。
+- Theme 改成动态色（`UIColor(dynamicProvider:)`），UIKit 输入框单独用动态 `UIColor`，避免深色下光标/占位符不跟随。
+
+### 修复
+
+- 闲鱼搜索深链改成 `fleamarket://searchResult?keyword={q}`，并加剪贴板兜底（打开 App 后可直接粘贴）。
+
+### 移除
+
+- 不再强制浅色模式（`UIUserInterfaceStyle = Light` 从两个 Info.plist 移除）。
+
 ## v2.0.1 — 主按钮靠右（2026-11-05）
 
 - 呼吸圆主按钮从居中移回右下角，和麦克风分居两端。

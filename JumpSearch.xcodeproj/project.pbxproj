@@ -18,6 +18,7 @@
 		A10000000000000000000024 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* Assets.xcassets */; };
 		A20000000000000000000001 /* SharedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* SharedData.swift */; };
 		A20000000000000000000002 /* WidgetDeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* WidgetDeepLink.swift */; };
+		A30000000000000000000001 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30000000000000000000002 /* OnboardingView.swift */; };
 		A20000000000000000000003 /* SharedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* SharedData.swift */; };
 		A20000000000000000000004 /* Destinations.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000017 /* Destinations.swift */; };
 		A20000000000000000000005 /* MindSearchWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* MindSearchWidget.swift */; };
@@ -53,6 +54,7 @@
 		A10000000000000000000023 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000000000000000000011 /* SharedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedData.swift; sourceTree = "<group>"; };
 		A20000000000000000000012 /* WidgetDeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDeepLink.swift; sourceTree = "<group>"; };
+		A30000000000000000000002 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		A20000000000000000000013 /* MindSearchWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindSearchWidget.swift; sourceTree = "<group>"; };
 		A20000000000000000000014 /* WidgetPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetPalette.swift; sourceTree = "<group>"; };
 		A20000000000000000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -110,6 +112,7 @@
 				A10000000000000000000021 /* MetaballView.swift */,
 				A20000000000000000000011 /* SharedData.swift */,
 				A20000000000000000000012 /* WidgetDeepLink.swift */,
+				A30000000000000000000002 /* OnboardingView.swift */,
 				A20000000000000000000016 /* JumpSearch.entitlements */,
 				A10000000000000000000023 /* Assets.xcassets */,
 				A10000000000000000000009 /* Info.plist */,
@@ -229,6 +232,7 @@
 				A10000000000000000000022 /* MetaballView.swift in Sources */,
 				A20000000000000000000001 /* SharedData.swift in Sources */,
 				A20000000000000000000002 /* WidgetDeepLink.swift in Sources */,
+				A30000000000000000000001 /* OnboardingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,7 +322,7 @@
 				CODE_SIGN_ENTITLEMENTS = JumpSearch/JumpSearch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JLJH3T9W5A;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -327,7 +331,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.1;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -343,7 +347,7 @@
 				CODE_SIGN_ENTITLEMENTS = JumpSearch/JumpSearch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JLJH3T9W5A;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -352,7 +356,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.1;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -368,7 +372,7 @@
 				CODE_SIGN_ENTITLEMENTS = MindSearchWidget/MindSearchWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JLJH3T9W5A;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MindSearchWidget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -376,7 +380,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.0.1;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch.Widget;
 				PRODUCT_NAME = MindSearchWidget;
 				SKIP_INSTALL = YES;
@@ -393,7 +397,7 @@
 				CODE_SIGN_ENTITLEMENTS = MindSearchWidget/MindSearchWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JLJH3T9W5A;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MindSearchWidget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -401,7 +405,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.0.1;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch.Widget;
 				PRODUCT_NAME = MindSearchWidget;
 				SKIP_INSTALL = YES;

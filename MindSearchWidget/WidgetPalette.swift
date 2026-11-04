@@ -1,12 +1,25 @@
 import SwiftUI
+import UIKit
 
-/// 和主 App 一致的纸张 / 墨色，单独定义一份，避免把整个 ContentView 编进 Extension。
+/// 和主 App 一致的暖雾 / 暖黑配色，单独定义一份，避免把整个 ContentView 编进 Extension。
 enum WidgetPalette {
-    static let paper = Color(red: 0.957, green: 0.945, blue: 0.918)   // #F4F1EA 暖雾白
-    static let card = Color(red: 0.929, green: 0.914, blue: 0.874)    // #EDE9DF 柔米
-    static let ink = Color(red: 0.227, green: 0.212, blue: 0.188)     // #3A3630 炭墨
-    static let accent = Color(red: 0.420, green: 0.478, blue: 0.416)  // #6B7A6A 雾绿
-    static let faded = Color(red: 0.227, green: 0.212, blue: 0.188).opacity(0.42)
+    static let paper = dynamic(light: (0.957, 0.945, 0.918),
+                               dark:  (0.110, 0.102, 0.090))
+    static let card = dynamic(light: (0.929, 0.914, 0.874),
+                              dark:  (0.149, 0.137, 0.122))
+    static let ink = dynamic(light: (0.227, 0.212, 0.188),
+                             dark:  (0.929, 0.910, 0.874))
+    static let accent = dynamic(light: (0.420, 0.478, 0.416),
+                                dark:  (0.659, 0.710, 0.627))
+    static let faded = ink.opacity(0.42)
+
+    private static func dynamic(light: (CGFloat, CGFloat, CGFloat),
+                                dark: (CGFloat, CGFloat, CGFloat)) -> Color {
+        Color(UIColor { trait in
+            let c = trait.userInterfaceStyle == .dark ? dark : light
+            return UIColor(red: c.0, green: c.1, blue: c.2, alpha: 1)
+        })
+    }
 
     static func mono(_ size: CGFloat, bold: Bool = false) -> Font {
         .system(size: size, weight: bold ? .bold : .regular, design: .monospaced)
