@@ -711,8 +711,14 @@ struct ContentView: View {
         }
         appText = d.name
         appFocused = false
-        keywordFocused = true
         tap()
+
+        // 关键词已经填好时，确认应用就直接搜；空着才把焦点交给关键词
+        if trimmedKeyword.isEmpty {
+            keywordFocused = true
+        } else {
+            submit()
+        }
     }
 
     private func submit() {
@@ -789,8 +795,14 @@ struct ContentView: View {
         }
         panelApp = d.name
         panelAppFocused = false
-        panelKeywordFocused = true
         tap()
+
+        // 从记录 / 想法进来时关键词已经填好，换完应用直接搜，不再跳关键词
+        if panelKeyword.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            panelKeywordFocused = true
+        } else {
+            panelSearch()
+        }
     }
 
     private func panelSearch() {
