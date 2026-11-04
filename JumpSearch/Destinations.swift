@@ -21,6 +21,9 @@ struct Destination: Identifiable {
     let webURL: (String) -> String     // 没装应用时的网页兜底
     var appTemplate: String = ""       // 可编辑的默认模板（含 {q}）
     var webTemplate: String = ""
+    /// 打开前先把关键词写进剪贴板。
+    /// 用于 URL scheme 带不进文字的 App（例如 DeepSeek 的 dpsk://）。
+    var copyOnOpen: Bool = false
 }
 
 // 拼音 / 首字母，用于输入联想
@@ -76,7 +79,8 @@ private func destination(_ name: String,
                          _ category: AppCategory,
                          _ scheme: String,
                          app: String,
-                         web: String) -> Destination {
+                         web: String,
+                         copy: Bool = false) -> Destination {
     Destination(
         name: name,
         category: category,
@@ -84,7 +88,8 @@ private func destination(_ name: String,
         appURL: { app.replacingOccurrences(of: "{q}", with: encodeQuery($0)) },
         webURL: { web.replacingOccurrences(of: "{q}", with: encodeQuery($0)) },
         appTemplate: app,
-        webTemplate: web
+        webTemplate: web,
+        copyOnOpen: copy
     )
 }
 
@@ -171,25 +176,34 @@ let destinations: [Destination] = [
                 web: "https://open.spotify.com/search/{q}"),
 
     // AI 服务商
+    // DeepSeek 的 dpsk:// 只能打开 App、带不进文字，所以改成「先复制关键词，再打开 App」。
+    // 其他 AI 大多是网页 ?q=，参数不一定被接住，也加一层剪贴板兜底。
+    // 豆包确认能通过 doubao://chat?text= 直接带文本，保持直连。
     destination("DeepSeek", .ai, "dpsk",
-                app: "dpsk://chat/share?text={q}",
-                web: "https://chat.deepseek.com/?q={q}&autosend=1&search=1"),
+                app: "dpsk://",
+                web: "https://chat.deepseek.com/?q={q}&autosend=1&search=1",
+                copy: true),
     destination("Kimi", .ai, "kimi",
                 app: "https://www.kimi.com/?q={q}",
-                web: "https://www.kimi.com/?q={q}"),
+                web: "https://www.kimi.com/?q={q}",
+                copy: true),
     destination("豆包", .ai, "doubao",
                 app: "doubao://chat?text={q}",
                 web: "https://www.doubao.com/?q={q}"),
     destination("文小言", .ai, "yiyan",
                 app: "https://yiyan.baidu.com/?q={q}",
-                web: "https://yiyan.baidu.com/?q={q}"),
+                web: "https://yiyan.baidu.com/?q={q}",
+                copy: true),
     destination("通义", .ai, "tongyi",
                 app: "https://www.qianwen.com/?q={q}",
-                web: "https://www.qianwen.com/?q={q}"),
+                web: "https://www.qianwen.com/?q={q}",
+                copy: true),
     destination("腾讯元宝", .ai, "yuanbao",
                 app: "https://yuanbao.tencent.com/chat?q={q}",
-                web: "https://yuanbao.tencent.com/chat?q={q}"),
+                web: "https://yuanbao.tencent.com/chat?q={q}",
+                copy: true),
     destination("ChatGPT", .ai, "chatgpt",
                 app: "https://chatgpt.com/?q={q}",
-                web: "https://chatgpt.com/?q={q}")
+                web: "https://chatgpt.com/?q={q}",
+                copy: true)
 ]

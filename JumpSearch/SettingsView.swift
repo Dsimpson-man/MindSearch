@@ -45,7 +45,8 @@ struct SettingsView: View {
             URLTemplateEditor(
                 appName: d.name,
                 template: store.urlOverrides[d.name] ?? d.appTemplate,
-                defaultTemplate: d.appTemplate
+                defaultTemplate: d.appTemplate,
+                copiesToClipboard: d.copyOnOpen
             ) { value in
                 let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
                 if trimmed.isEmpty || trimmed == d.appTemplate {
@@ -153,10 +154,16 @@ struct SettingsView: View {
                                 Button {
                                     beginEditing(d)
                                 } label: {
-                                    HStack {
+                                    HStack(spacing: 6) {
                                         Text(d.name)
                                             .font(Theme.mono(15))
                                             .foregroundColor(Theme.ink)
+                                        if d.copyOnOpen {
+                                            Image(systemName: "doc.on.clipboard")
+                                                .font(.system(size: 10))
+                                                .foregroundColor(Theme.faded)
+                                                .accessibilityLabel("会复制到剪贴板")
+                                        }
                                         Spacer()
                                         Text(aliasLabel(for: d))
                                             .font(Theme.mono(12))
@@ -246,6 +253,7 @@ struct SettingsView: View {
 private struct URLTemplateEditor: View {
     let appName: String
     let defaultTemplate: String
+    let copiesToClipboard: Bool
     let onSave: (String) -> Void
 
     @State private var draft: String
@@ -253,9 +261,11 @@ private struct URLTemplateEditor: View {
     @Environment(\.dismiss) private var dismiss
 
     init(appName: String, template: String, defaultTemplate: String,
+         copiesToClipboard: Bool = false,
          onSave: @escaping (String) -> Void) {
         self.appName = appName
         self.defaultTemplate = defaultTemplate
+        self.copiesToClipboard = copiesToClipboard
         self.onSave = onSave
         self._draft = State(initialValue: template)
     }
@@ -266,6 +276,21 @@ private struct URLTemplateEditor: View {
                 Text("用 {q} 代表关键词；留空或恢复默认会清掉自定义。")
                     .font(Theme.mono(12))
                     .foregroundColor(Theme.faded)
+
+                if copiesToClipboard {
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "doc.on.clipboard")
+                            .font(.system(size: 11))
+                        Text("这个应用会先把关键词复制到剪贴板，再打开 App；进去后长按输入框粘贴。")
+                            .font(Theme.mono(11))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .foregroundColor(Theme.ink)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Theme.card))
+                }
 
                 TextEditor(text: $draft)
                     .font(Theme.mono(14))

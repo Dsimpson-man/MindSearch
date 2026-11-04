@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## v1.2.0 — AI 剪贴板模式（2026-11-05）
+
+DeepSeek 等 AI 的 URL 带不进文字，改成「先复制关键词，再打开 App，进去粘贴」。
+
+### 新增
+
+- `Destination.copyOnOpen` 字段：打开目标 App 前把关键词写进 `UIPasteboard`。
+- 搜索时震动提示 + toast「已复制关键词，去 XX 粘贴」，延迟 0.35s 再切到目标 App，避免提示一闪而过。
+- 设置里的应用列表用 📋 图标标出剪贴板模式的应用；URL 编辑器里也有说明。
+
+### 改动
+
+- DeepSeek：`dpsk://chat/share?text={q}` → `dpsk://` + 剪贴板。
+- Kimi / 文小言 / 通义 / 腾讯元宝 / ChatGPT：保留网页 `?q=`，额外加剪贴板兜底（网页不认参数时还能手动粘贴）。
+- 豆包保持 `doubao://chat?text={q}` 直连（已确认能带文本）。
+
 ## v1.1.0 — 桌面与锁屏小组件（2026-11-04）
 
 一次交付完整 Widget Extension，主屏三种尺寸 + 锁屏三种样式。

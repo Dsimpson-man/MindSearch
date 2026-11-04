@@ -36,7 +36,8 @@ SwiftUI 小工具：输入关键词（或直接说），选一个 App，跳到�
 ## 已知问题
 
 - 第三方 App 深链是私有约定，可能随对方版本升级失效；设置里长按应用可改 URL。
-- DeepSeek 的 `dpsk://` 只能唤起 App，不能带文本（「问问 DeepSeek」是 App Intent，不是 URL scheme）。
+- DeepSeek 的 `dpsk://` 只能唤起 App，不能带文本（「问问 DeepSeek」是 App Intent，不是 URL scheme），已改成剪贴板模式。
+- 剪贴板模式需要你进 App 后手动长按粘贴，iOS 不允许跨 App 自动粘贴。
 - 锁屏组件点击后需要解锁，无法在锁屏状态下直接完成跳转。
 
 ## 界面
@@ -87,13 +88,19 @@ SwiftUI 小工具：输入关键词（或直接说），选一个 App，跳到�
 | 生活服务 | 大众点评 | `dianping://searchshoplist?keyword={q}` |
 | 生活服务 | 饿了么 | `eleme://search?keyword={q}` |
 | 音乐 | Spotify | `spotify:search:{q}` |
-| AI | DeepSeek | `dpsk://chat/share?text={q}`（App 唤起） |
-| AI | Kimi | `https://www.kimi.com/?q={q}` |
+| AI | DeepSeek | `dpsk://` + **复制关键词到剪贴板** |
+| AI | Kimi | `https://www.kimi.com/?q={q}` + 剪贴板兜底 |
 | AI | 豆包 | `doubao://chat?text={q}`（App 唤起，可带文本） |
-| AI | 文小言 | `https://yiyan.baidu.com/?q={q}` |
-| AI | 通义 | `https://www.qianwen.com/?q={q}` |
-| AI | 腾讯元宝 | `https://yuanbao.tencent.com/chat?q={q}` |
-| AI | ChatGPT | `https://chatgpt.com/?q={q}` |
+| AI | 文小言 | `https://yiyan.baidu.com/?q={q}` + 剪贴板兜底 |
+| AI | 通义 | `https://www.qianwen.com/?q={q}` + 剪贴板兜底 |
+| AI | 腾讯元宝 | `https://yuanbao.tencent.com/chat?q={q}` + 剪贴板兜底 |
+| AI | ChatGPT | `https://chatgpt.com/?q={q}` + 剪贴板兜底 |
+
+### 剪贴板模式
+
+DeepSeek 的 `dpsk://` 只能打开 App，URL 带不进文字（「问问 DeepSeek」是 App Intent，不是 URL scheme）。所以这些 AI 改成：**先把关键词复制到剪贴板 → 再打开 App → 你进去长按输入框粘贴**。会震动提示一下，设置里的应用列表带 📋 图标的就是这一类。
+
+其他 AI 大多是网页 `?q=`，参数不一定被接住，也加了同样的剪贴板兜底——无论最后打开的是 App 还是浏览器，剪贴板里都有内容。豆包确认能用 `doubao://chat?text=` 直接带文本，保持直连。
 
 这些都是第三方 App 的私有约定，没有官方文档保证。其中小红书、哔哩哔哩、知乎、微博、豆瓣、YouTube、京东、拼多多、美团、大众点评的写法来自公开整理；抖音、淘宝、天猫、闲鱼、饿了么、Spotify 的搜索路径属于社区流传，需要真机逐条验证，失效时会在应用里提示改用网页搜索。
 

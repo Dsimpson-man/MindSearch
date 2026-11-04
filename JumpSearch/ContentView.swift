@@ -900,7 +900,18 @@ struct ContentView: View {
 
         if UIApplication.shared.canOpenURL(url) {
             store.history.insert(HistoryItem(text: text, app: d.name), at: 0)
-            UIApplication.shared.open(url)
+
+            if d.copyOnOpen {
+                // DeepSeek 这类 URL 带不进文字：先复制，再打开 App，用户进去粘贴
+                UIPasteboard.general.string = text
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                flash("已复制关键词，去 \(d.name) 粘贴")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    UIApplication.shared.open(url)
+                }
+            } else {
+                UIApplication.shared.open(url)
+            }
         } else {
             pendingWeb = PendingWeb(destination: d, text: text)
         }
