@@ -223,8 +223,31 @@ final class Store: ObservableObject {
         if UserDefaults.standard.object(forKey: "ideaThreshold") != nil {
             ideaThreshold = UserDefaults.standard.integer(forKey: "ideaThreshold")
         }
+        var loadedOverrides: [String: String] = [:]
         if let d = UserDefaults.standard.data(forKey: "urlOverrides"),
-           let v = try? JSONDecoder().decode([String: String].self, from: d) { urlOverrides = v }
+           let v = try? JSONDecoder().decode([String: String].self, from: d) {
+            loadedOverrides = v
+        }
+
+        // 修一次旧数据：自定义模板里没有 {q} 的话，关键词永远带不进去。
+        // 默认模板带占位符、自定义却没带的，判定为误删，清掉回落到默认值。
+        var didRepairOverrides = false
+        if !UserDefaults.standard.bool(forKey: "repairedMissingPlaceholder") {
+            let broken = loadedOverrides.filter { name, template in
+                guard let dest = destinations.first(where: { $0.name == name }) else { return false }
+                return dest.appTemplate.contains("{q}") && !template.contains("{q}")
+            }.map(\.key)
+
+            if !broken.isEmpty {
+                for name in broken { loadedOverrides.removeValue(forKey: name) }
+                if let data = try? JSONEncoder().encode(loadedOverrides) {
+                    UserDefaults.standard.set(data, forKey: "urlOverrides")
+                }
+                didRepairOverrides = true
+            }
+            UserDefaults.standard.set(true, forKey: "repairedMissingPlaceholder")
+        }
+        urlOverrides = loadedOverrides
 
         // 老用户升级后第一次启动，把已有数据补进 App Group，小组件不会空白
         SharedData.bootstrapIfNeeded(
@@ -236,6 +259,9 @@ final class Store: ObservableObject {
             useDefaultApp: useDefaultApp,
             urlOverrides: urlOverrides
         )
+
+        // 修复过的模板要同步给小组件，否则 App Group 里还是旧的
+        if didRepairOverrides { publishToWidget() }
     }
 
     /// 把小组件需要的数据同步到 App Group，然后刷新时间线
@@ -1359,16 +1385,25 @@ struct ContentView: View {
     }
 
     private func go(_ d: Destination, _ text: String) {
-        guard let url = resolvedURL(for: d, text: text, web: false) else { return }
+        guard let url = resolvedURL(for: d, text: text, web: false) else {
+            flash("这个应用的跳转地址无效")
+            return
+        }
+
+        // 模板里没有 {q} 时，关键词根本进不去，只能退回剪贴板
+        let template = store.urlOverrides[d.name] ?? d.appTemplate
+        let needsClipboard = d.copyOnOpen || !template.contains("{q}")
 
         if UIApplication.shared.canOpenURL(url) {
             store.history.insert(HistoryItem(text: text, app: d.name), at: 0)
 
-            if d.copyOnOpen {
+            if needsClipboard {
                 // DeepSeek 这类 URL 带不进文字：先复制，再打开 App，用户进去粘贴
                 UIPasteboard.general.string = text
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
-                flash("已复制关键词，去 \(d.name) 粘贴")
+                flash(d.copyOnOpen
+                      ? "已复制关键词，去 \(d.name) 粘贴"
+                      : "跳转地址缺少 {q}，关键词已复制")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                     UIApplication.shared.open(url)
                 }

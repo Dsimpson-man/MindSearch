@@ -280,6 +280,21 @@ private struct URLTemplateEditor: View {
                     .font(Theme.mono(12))
                     .foregroundColor(Theme.faded)
 
+                if defaultTemplate.contains("{q}") && !draft.contains("{q}") {
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 11))
+                        Text("模板里没有 {q}，关键词带不进去——搜索时只会打开 App，关键词会退回复制到剪贴板。")
+                            .font(Theme.mono(11))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .foregroundColor(Theme.danger)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Theme.card))
+                }
+
                 if copiesToClipboard {
                     HStack(alignment: .top, spacing: 6) {
                         Image(systemName: "doc.on.clipboard")
