@@ -12,7 +12,7 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            Theme.paper.ignoresSafeArea()
+            HazeBackground()
 
             VStack(spacing: 0) {
                 header
@@ -188,8 +188,10 @@ struct SettingsView: View {
                                 }
                             }
                         }
-                        .background(RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(Theme.card))
+                        .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(.ultraThinMaterial))
+                        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(Theme.hairline, lineWidth: 0.8))
                     }
                 }
             }
@@ -292,7 +294,7 @@ private struct URLTemplateEditor: View {
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Theme.card))
+                        .fill(.ultraThinMaterial))
                 }
 
                 if copiesToClipboard {
@@ -307,7 +309,7 @@ private struct URLTemplateEditor: View {
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Theme.card))
+                        .fill(.ultraThinMaterial))
                 }
 
                 TextEditor(text: $draft)
@@ -316,7 +318,7 @@ private struct URLTemplateEditor: View {
                     .scrollContentBackground(.hidden)
                     .padding(8)
                     .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Theme.card))
+                        .fill(.ultraThinMaterial))
                     .frame(minHeight: 180)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
@@ -347,11 +349,11 @@ private struct URLTemplateEditor: View {
                         .foregroundColor(Theme.paper)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
-                        .background(Capsule().fill(Theme.accent))
+                        .background(Capsule().fill(Theme.accentFill))
                 }
             }
             .padding(20)
-            .background(Theme.paper.ignoresSafeArea())
+            .background(HazeBackground())
             .navigationTitle("\(appName) 的跳转地址")
             .navigationBarTitleDisplayMode(.inline)
         }

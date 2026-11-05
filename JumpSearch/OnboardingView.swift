@@ -31,7 +31,7 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            Theme.paper.ignoresSafeArea()
+            HazeBackground()
 
             VStack(alignment: .leading, spacing: 0) {
                 Spacer(minLength: 0)
@@ -65,7 +65,7 @@ struct OnboardingView: View {
                             .foregroundColor(Theme.paper)
                             .padding(.horizontal, 26)
                             .padding(.vertical, 12)
-                            .background(Capsule().fill(Theme.accent))
+                            .background(Capsule().fill(Theme.accentFill))
                     }
                     .buttonStyle(PressableStyle())
                     .accessibilityLabel(page == pages.count - 1 ? "开始使用" : "下一页")

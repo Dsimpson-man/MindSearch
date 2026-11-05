@@ -2,23 +2,49 @@ import SwiftUI
 import UIKit
 import WidgetKit
 
-// MARK: - 风格：暖雾白 / 暖黑，炭墨与雾绿，衬线 / 等宽
+// MARK: - 风格：雾面莫兰迪（低饱和灰玫瑰 / 灰蓝 / 雾绿），衬线 + 等宽
+//
+// 底色不再是实色纸，而是「一层暖灰渐变 + 三团极慢漂移的雾」。
+// 所有表面用磨砂玻璃，文字仍然压到接近炭黑，保证对比度。
 enum Theme {
-    static let paper = dynamic(light: (0.957, 0.945, 0.918),   // #F4F1EA 暖雾白
-                               dark:  (0.110, 0.102, 0.090))   // #1C1A17 暖黑
-    static let card = dynamic(light: (0.929, 0.914, 0.874),    // #EDE9DF 柔米
-                              dark:  (0.149, 0.137, 0.122))    // #262320
-    static let ink = dynamic(light: (0.227, 0.212, 0.188),     // #3A3630 炭墨
-                             dark:  (0.929, 0.910, 0.874))     // #EDE8DF 暖白
-    static let accent = dynamic(light: (0.420, 0.478, 0.416),  // #6B7A6A 雾绿
-                                dark:  (0.659, 0.710, 0.627))  // #A8B5A0 亮雾绿
-    static let danger = dynamic(light: (0.627, 0.302, 0.259),  // #A04D42 砖红
-                                dark:  (0.550, 0.270, 0.230))  // #8C453B
+    // 底色
+    static let paper = dynamic(light: (0.906, 0.898, 0.886),   // #E7E5E2 雾灰
+                               dark:  (0.086, 0.082, 0.098))   // #161519 夜雾
+    static let skyTop = dynamic(light: (0.929, 0.918, 0.902),  // #EDEAE6
+                                dark:  (0.106, 0.102, 0.121))  // #1B1A1F
+    static let skyBottom = dynamic(light: (0.867, 0.863, 0.863), // #DDDCDC
+                                   dark:  (0.067, 0.063, 0.078)) // #111014
+    static let ink = dynamic(light: (0.227, 0.216, 0.204),     // #3A3734
+                             dark:  (0.902, 0.886, 0.867))     // #E6E2DD
+    static let accent = dynamic(light: (0.463, 0.514, 0.463),  // #768376 雾绿灰
+                                dark:  (0.678, 0.725, 0.667))  // #ADB9AA
+    /// 实心按钮的底色：比 accent 更深一档，保证浅色文字的对比度
+    static let accentFill = dynamic(light: (0.365, 0.412, 0.373),  // #5D6960
+                                    dark:  (0.678, 0.725, 0.667))
+    static let danger = dynamic(light: (0.600, 0.349, 0.322),  // #995956 灰砖红
+                                dark:  (0.541, 0.310, 0.286))  // #8A4F49
     /// 红底上的字：不跟深色模式翻，否则会变成深底深字
     static let onDanger = Color(red: 0.957, green: 0.945, blue: 0.918)
 
-    static let faded = ink.opacity(0.42)
-    static let hairline = ink.opacity(0.10)
+    // 三团雾：只用来铺气氛，不承载信息
+    static let hazeRose = dynamic(light: (0.847, 0.769, 0.741),  // 灰玫瑰
+                                  dark:  (0.286, 0.208, 0.216))
+    static let hazeBlue = dynamic(light: (0.729, 0.780, 0.808),  // 灰蓝
+                                  dark:  (0.180, 0.220, 0.263))
+    static let hazeSage = dynamic(light: (0.769, 0.800, 0.741),  // 雾绿
+                                  dark:  (0.196, 0.239, 0.192))
+
+    /// 面板背后压暗用：深色模式下必须用黑，否则会变成一层发光的纱
+    static let scrim = Color(UIColor { trait in
+        UIColor.black.withAlphaComponent(trait.userInterfaceStyle == .dark ? 0.45 : 0.12)
+    })
+
+    static let faded = ink.opacity(0.60)      // 可读的次级文字
+    static let hairline = ink.opacity(0.12)
+
+    static let shadow = Color(UIColor { trait in
+        UIColor.black.withAlphaComponent(trait.userInterfaceStyle == .dark ? 0.45 : 0.10)
+    })
 
     private static func dynamic(light: (CGFloat, CGFloat, CGFloat),
                                 dark: (CGFloat, CGFloat, CGFloat)) -> Color {
@@ -32,24 +58,24 @@ enum Theme {
     static var inkUIColor: UIColor {
         UIColor { trait in
             trait.userInterfaceStyle == .dark
-            ? UIColor(red: 0.929, green: 0.910, blue: 0.874, alpha: 1)
-            : UIColor(red: 0.227, green: 0.212, blue: 0.188, alpha: 1)
+            ? UIColor(red: 0.902, green: 0.886, blue: 0.867, alpha: 1)
+            : UIColor(red: 0.227, green: 0.216, blue: 0.204, alpha: 1)
         }
     }
 
     static var accentUIColor: UIColor {
         UIColor { trait in
             trait.userInterfaceStyle == .dark
-            ? UIColor(red: 0.659, green: 0.710, blue: 0.627, alpha: 1)
-            : UIColor(red: 0.420, green: 0.478, blue: 0.416, alpha: 1)
+            ? UIColor(red: 0.678, green: 0.725, blue: 0.667, alpha: 1)
+            : UIColor(red: 0.463, green: 0.514, blue: 0.463, alpha: 1)
         }
     }
 
     static var placeholderUIColor: UIColor {
         UIColor { trait in
             trait.userInterfaceStyle == .dark
-            ? UIColor(red: 0.929, green: 0.910, blue: 0.874, alpha: 0.28)
-            : UIColor(red: 0.227, green: 0.212, blue: 0.188, alpha: 0.28)
+            ? UIColor(red: 0.902, green: 0.886, blue: 0.867, alpha: 0.30)
+            : UIColor(red: 0.227, green: 0.216, blue: 0.204, alpha: 0.30)
         }
     }
 
@@ -66,31 +92,34 @@ enum Theme {
     }
 }
 
-// MARK: - 动效：四档，硬上限 360ms
+// MARK: - 动效：全部弹簧 —— 越靠近手指越硬，越远越软
 
 enum Motion {
-    static let press: Double = 0.09
-    static let quick: Double = 0.18
-    static let page: Double = 0.22
-    static let panel: Double = 0.34
-    static let fly: Double = 0.32
+    /// 按压：一下到底，指尖能感觉到
+    static let press: Animation = .spring(response: 0.30, dampingFraction: 0.72)
+    /// 状态切换 / 图标 / 输入框高度
+    static let quick: Animation = .spring(response: 0.42, dampingFraction: 0.86)
+    /// 页面进出
+    static let page: Animation = .spring(response: 0.52, dampingFraction: 0.90)
+    /// 面板升起
+    static let panel: Animation = .spring(response: 0.55, dampingFraction: 0.84)
+    /// 飞点
+    static let fly: Animation = .spring(response: 0.46, dampingFraction: 0.80)
+    /// 背景的雾：58 秒一个来回，慢到几乎察觉不到方向
+    static let drift: Animation = .linear(duration: 58).repeatForever(autoreverses: true)
 
-    static func ease(_ duration: Double) -> Animation {
-        .timingCurve(0.16, 1, 0.3, 1, duration: duration)
-    }
-
-    static var panelCurve: Animation {
-        .timingCurve(0.2, 1.08, 0.3, 1, duration: panel)
-    }
+    /// 弹簧没有固定时长，需要延时的场合用这两个近似值
+    static let quickDelay: Double = 0.42
+    static let flyDelay: Double = 0.46
 }
 
 /// 按下去是「咔」的一下，不是陷进棉花
 struct PressableStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.96 : 1)
-            .opacity(configuration.isPressed ? 0.9 : 1)
-            .animation(Motion.ease(Motion.press), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.955 : 1)
+            .opacity(configuration.isPressed ? 0.92 : 1)
+            .animation(Motion.press, value: configuration.isPressed)
     }
 }
 
@@ -103,18 +132,31 @@ private struct SubmitButton: View {
 
     var body: some View {
         ZStack {
+            // 外圈雾光：有关键词时铺开
             Circle()
-                .fill(Theme.accent.opacity(active ? 0.10 : 0.04))
-                .overlay(
-                    Circle().stroke(Theme.accent.opacity(active ? 0.28 : 0.14),
-                                    lineWidth: 0.8)
+                .fill(
+                    RadialGradient(colors: [Theme.accent.opacity(active ? 0.20 : 0.05), .clear],
+                                   center: .center,
+                                   startRadius: 16,
+                                   endRadius: 58)
                 )
+                .frame(width: 116, height: 116)
+                .scaleEffect(active ? 1 : 0.82)
+
+            // 磨砂环
+            Circle()
+                .fill(.ultraThinMaterial)
                 .frame(width: 72, height: 72)
+                .overlay(
+                    Circle().strokeBorder(Theme.accent.opacity(active ? 0.40 : 0.20),
+                                          lineWidth: 0.8)
+                )
 
             Circle()
-                .fill(active ? Theme.accent : Theme.ink.opacity(0.72))
+                .fill(active ? Theme.accentFill : Theme.ink.opacity(0.66))
                 .frame(width: 46, height: 46)
-                .scaleEffect(active ? 1 : 0.94)
+                .scaleEffect(active ? 1 : 0.92)
+                .shadow(color: Theme.accent.opacity(active ? 0.40 : 0), radius: 12, y: 3)
 
             Image(systemName: "arrow.right")
                 .font(.system(size: 15, weight: .medium))
@@ -133,7 +175,7 @@ private struct SubmitButton: View {
                 }
             }
         )
-        .animation(Motion.ease(Motion.quick), value: active)
+        .animation(Motion.quick, value: active)
         .accessibilityElement()
         .accessibilityLabel("搜索")
         .accessibilityHint("长按存为想法")
@@ -143,20 +185,71 @@ private struct SubmitButton: View {
     }
 }
 
-// MARK: - 纸张底纹
+// MARK: - 雾面底：一层渐变 + 三团极慢漂移的雾 + 极细颗粒
 
-private struct PaperBackground: View {
+struct HazeBackground: View {
+    /// 0…1：聚焦关键词时让雾稍微亮一点，像呼吸深了一口
+    var emphasis: Double = 0
+
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var drifting = false
 
     var body: some View {
-        ZStack {
-            Theme.paper
-            Image(uiImage: Self.texture)
-                .resizable(resizingMode: .tile)
-                .opacity(colorScheme == .dark ? 0.10 : 0.32)
-                .blendMode(.multiply)
+        GeometryReader { geo in
+            let w = max(geo.size.width, geo.size.height)
+            let h = geo.size.height
+
+            ZStack {
+                LinearGradient(colors: [Theme.skyTop, Theme.paper, Theme.skyBottom],
+                               startPoint: .topLeading,
+                               endPoint: .bottomTrailing)
+
+                haze(Theme.hazeRose, diameter: w * 1.20)
+                    .offset(x: -w * 0.36 + (drifting ? w * 0.09 : 0),
+                            y: -h * 0.34 + (drifting ? h * 0.10 : 0))
+                    .opacity(0.88 + emphasis * 0.12)
+                    .scaleEffect(1 + emphasis * 0.04)
+                    .animation(.spring(response: 0.9, dampingFraction: 0.9), value: emphasis)
+
+                haze(Theme.hazeBlue, diameter: w * 1.10)
+                    .offset(x: w * 0.40 - (drifting ? w * 0.11 : 0),
+                            y: -h * 0.02 + (drifting ? h * 0.14 : 0))
+
+                haze(Theme.hazeSage, diameter: w * 1.00)
+                    .offset(x: -w * 0.14 + (drifting ? w * 0.15 : 0),
+                            y: h * 0.36 - (drifting ? h * 0.11 : 0))
+
+                // 四周压一点点，中间透气
+                RadialGradient(colors: [.clear,
+                                        Color.black.opacity(colorScheme == .dark ? 0.30 : 0.05)],
+                               center: .center,
+                               startRadius: w * 0.22,
+                               endRadius: w * 0.82)
+
+                // 颗粒：顺带压住大面积渐变的色带
+                Image(uiImage: Self.texture)
+                    .resizable(resizingMode: .tile)
+                    .opacity(colorScheme == .dark ? 0.06 : 0.16)
+                    .blendMode(.multiply)
+            }
         }
         .ignoresSafeArea()
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(Motion.drift) { drifting = true }
+        }
+    }
+
+    private func haze(_ color: Color, diameter: CGFloat) -> some View {
+        Circle()
+            .fill(
+                RadialGradient(colors: [color, color.opacity(0)],
+                               center: .center,
+                               startRadius: diameter * 0.06,
+                               endRadius: diameter * 0.50)
+            )
+            .frame(width: diameter, height: diameter)
     }
 
     private static let texture: UIImage = {
@@ -409,13 +502,13 @@ struct ContentView: View {
     private var ideaUIFont: UIFont { Theme.serifUIFont(15.5) }
     private let ideaLineSpacing: CGFloat = 8
 
-    private func animate(_ duration: Double) -> Animation? {
-        reduceMotion ? nil : Motion.ease(duration)
+    private func animate(_ animation: Animation) -> Animation? {
+        reduceMotion ? nil : animation
     }
 
     var body: some View {
         ZStack {
-            PaperBackground()
+            HazeBackground(emphasis: keywordFocused ? 1 : 0)
                 .contentShape(Rectangle())
                 .onTapGesture { dismissKeyboard() }
 
@@ -430,9 +523,11 @@ struct ContentView: View {
                     Spacer()
                     Text(msg)
                         .font(Theme.mono(12))
-                        .foregroundColor(Theme.paper)
-                        .padding(.horizontal, 16).padding(.vertical, 9)
-                        .background(Capsule().fill(Theme.accent))
+                        .foregroundColor(Theme.ink)
+                        .padding(.horizontal, 18).padding(.vertical, 10)
+                        .background(Capsule().fill(.regularMaterial))
+                        .overlay(Capsule().strokeBorder(Theme.hairline, lineWidth: 0.75))
+                        .shadow(color: Theme.shadow, radius: 18, y: 6)
                         .padding(.bottom, 82)
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -485,7 +580,7 @@ struct ContentView: View {
         .onPreferenceChange(AnchorFrames.self) { anchors = $0 }
         .animation(animate(Motion.quick), value: message)
         .animation(animate(Motion.page), value: showSettings)
-        .animation(reduceMotion ? nil : Motion.panelCurve, value: showPanel)
+        .animation(reduceMotion ? nil : Motion.panel, value: showPanel)
         .animation(animate(Motion.page), value: screen)
         .animation(animate(Motion.quick), value: voice.isRecording)
         .onAppear {
@@ -588,7 +683,7 @@ struct ContentView: View {
 
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 18) {
-                    sentenceLine("用") { appField }
+                    sentenceLine("用", active: appFocused) { appField }
                     keywordLine
                 }
 
@@ -603,7 +698,7 @@ struct ContentView: View {
                         } label: {
                             Text("存为想法")
                                 .font(Theme.mono(11))
-                                .foregroundColor(Theme.accent)
+                                .foregroundColor(Theme.accentFill)
                                 .padding(.vertical, 10)
                                 .padding(.horizontal, 2)
                                 .contentShape(Rectangle())
@@ -627,6 +722,7 @@ struct ContentView: View {
 
     private func sentenceLine<Content: View>(_ label: String,
                                              size: CGFloat = 19,
+                                             active: Bool = false,
                                              @ViewBuilder content: () -> Content) -> some View {
         HStack(alignment: .center, spacing: 16) {
             Text(label)
@@ -636,17 +732,14 @@ struct ContentView: View {
             content()
         }
         .padding(.bottom, 9)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(Theme.hairline)
-                .frame(height: 0.5)
-        }
+        .overlay(alignment: .bottom) { rule(active: active) }
     }
 
     /// 多行输入行：标签对齐第一行文字，下划线跟着输入框的底边走
     private func multilineLine<Content: View>(_ label: String,
                                               size: CGFloat,
                                               labelTop: CGFloat,
+                                              active: Bool = false,
                                               @ViewBuilder content: () -> Content) -> some View {
         HStack(alignment: .top, spacing: 16) {
             Text(label)
@@ -657,11 +750,24 @@ struct ContentView: View {
             content()
         }
         .padding(.bottom, 9)
-        .overlay(alignment: .bottom) {
+        .overlay(alignment: .bottom) { rule(active: active) }
+    }
+
+    /// 细线 + 聚焦时从左边长出来的一道雾光
+    private func rule(active: Bool) -> some View {
+        ZStack(alignment: .leading) {
             Rectangle()
                 .fill(Theme.hairline)
                 .frame(height: 0.5)
+
+            LinearGradient(colors: [Theme.accent.opacity(0.85), Theme.accent.opacity(0)],
+                           startPoint: .leading,
+                           endPoint: .trailing)
+                .frame(height: 1.2)
+                .scaleEffect(x: active ? 1 : 0.001, anchor: .leading)
+                .opacity(active ? 1 : 0)
         }
+        .animation(animate(Motion.quick), value: active)
     }
 
     private var appField: some View {
@@ -678,7 +784,7 @@ struct ContentView: View {
     }
 
     private var keywordLine: some View {
-        multilineLine("搜索", size: 19, labelTop: keywordLabelTop) {
+        multilineLine("搜索", size: 19, labelTop: keywordLabelTop, active: keywordFocused) {
             GrowingTextView(
                 text: $keyword,
                 isFocused: $keywordFocused,
@@ -710,7 +816,7 @@ struct ContentView: View {
                     } label: {
                         Text(name)
                             .font(Theme.mono(11))
-                            .foregroundColor(Theme.accent)
+                            .foregroundColor(Theme.accentFill)
                             .padding(.vertical, 6)
                             .contentShape(Rectangle())
                     }
@@ -732,7 +838,7 @@ struct ContentView: View {
                 .font(.system(size: 14, weight: .regular))
                 .foregroundColor(voice.isRecording ? Theme.paper : Theme.accent)
                 .frame(width: 42, height: 42)
-                .background(Circle().fill(voice.isRecording ? Theme.accent : Color.clear))
+                .background(Circle().fill(voice.isRecording ? Theme.accentFill : Color.clear))
                 .overlay(Circle().stroke(Theme.accent.opacity(0.35), lineWidth: 0.8))
         }
         .buttonStyle(PressableStyle())
@@ -750,7 +856,7 @@ struct ContentView: View {
 
     private var panelOverlay: some View {
         ZStack(alignment: .bottom) {
-            Theme.ink.opacity(0.10).ignoresSafeArea()
+            Theme.scrim.ignoresSafeArea()
                 .onTapGesture { closePanel() }
 
             VStack(alignment: .leading, spacing: 14) {
@@ -775,7 +881,7 @@ struct ContentView: View {
                         .buttonStyle(PressableStyle())
                 }
 
-                sentenceLine("用", size: 16) {
+                sentenceLine("用", size: 16, active: panelAppFocused) {
                     AppNameField(
                         text: $panelApp,
                         focused: $panelAppFocused,
@@ -788,7 +894,7 @@ struct ContentView: View {
                     .frame(height: 38)
                 }
 
-                multilineLine("搜索", size: 16, labelTop: panelKeywordLabelTop) {
+                multilineLine("搜索", size: 16, labelTop: panelKeywordLabelTop, active: panelKeywordFocused) {
                     GrowingTextView(
                         text: $panelKeyword,
                         isFocused: $panelKeywordFocused,
@@ -811,16 +917,20 @@ struct ContentView: View {
                         .foregroundColor(Theme.paper)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 11)
-                        .background(Capsule().fill(Theme.accent))
+                        .background(Capsule().fill(Theme.accentFill))
                         .buttonStyle(PressableStyle())
                 }
                 .padding(.top, 4)
             }
             .padding(24)
             .background(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(Theme.paper)
-                    .shadow(color: Theme.ink.opacity(0.10), radius: 24, x: 0, y: 8)
+                RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    .fill(.regularMaterial)
+                    .shadow(color: Theme.shadow, radius: 32, x: 0, y: 14)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    .strokeBorder(Theme.hairline, lineWidth: 0.8)
             )
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
@@ -829,19 +939,27 @@ struct ContentView: View {
 
     // MARK: - 内容区
 
+    /// 页面之间交叉淡入 + 一点点缩放，不做横向位移（两个页面是平级的）
+    private var pageTransition: AnyTransition {
+        .asymmetric(
+            insertion: .opacity.combined(with: .scale(scale: 0.985)),
+            removal: .opacity
+        )
+    }
+
     @ViewBuilder
     private var content: some View {
         ZStack {
             switch screen {
             case .search:
                 sentenceArea
-                    .transition(.opacity)
+                    .transition(pageTransition)
             case .ideas:
                 ideasList
-                    .transition(.opacity)
+                    .transition(pageTransition)
             case .history:
                 historyList
-                    .transition(.opacity)
+                    .transition(pageTransition)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -912,20 +1030,26 @@ struct ContentView: View {
             .font(Theme.mono(10))
             .foregroundColor(Theme.faded)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 16)
+        .padding(.horizontal, 18)
+        .padding(.top, 17)
         .padding(.bottom, 10)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Theme.card)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: Theme.shadow, radius: editing ? 18 : 10, y: editing ? 8 : 4)
         )
-        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(Theme.hairline, lineWidth: 0.8)
+        )
+        .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .onTapGesture {
             if !editing { beginIdeaEdit(idea) }
         }
         .contextMenu {
             Button("删除", role: .destructive) { deleteIdea(idea) }
         }
+        .transition(.opacity.combined(with: .scale(scale: 0.97)))
         .animation(animate(Motion.quick), value: editing)
     }
 
@@ -975,6 +1099,7 @@ struct ContentView: View {
                         .contextMenu {
                             Button("删除", role: .destructive) { deleteHistory(h) }
                         }
+                        .transition(.opacity)
                     }
                 }
             }
@@ -1024,11 +1149,11 @@ struct ContentView: View {
                 } label: {
                     VStack(spacing: 5) {
                         Circle()
-                            .fill(selected ? Theme.accent : Color.clear)
+                            .fill(selected ? Theme.accentFill : Color.clear)
                             .frame(width: 3, height: 3)
                         Text(item.rawValue)
                             .font(Theme.mono(12))
-                            .foregroundColor(selected ? Theme.accent : Theme.ink.opacity(0.48))
+                            .foregroundColor(selected ? Theme.accentFill : Theme.ink.opacity(0.62))
                     }
                     .frame(minWidth: 64)
                     .padding(.vertical, 10)
@@ -1042,7 +1167,7 @@ struct ContentView: View {
         }
         .frame(maxWidth: .infinity)
         .frame(height: 50)
-        .background(Theme.paper)
+        .background(.ultraThinMaterial)
         .overlay(alignment: .top) {
             Rectangle()
                 .fill(Theme.hairline)
@@ -1188,9 +1313,9 @@ struct ContentView: View {
         // 先让圆点以「起点」姿态进入视图，再动画到终点
         fly = 0.001
         DispatchQueue.main.async {
-            withAnimation(Motion.ease(Motion.fly)) { fly = 1 }
+            withAnimation(Motion.fly) { fly = 1 }
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + Motion.fly + 0.05) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + Motion.flyDelay + 0.05) {
             fly = 0
         }
     }
@@ -1271,7 +1396,7 @@ struct ContentView: View {
     private func closePanel() {
         panelKeywordFocused = false
         panelAppFocused = false
-        withAnimation(reduceMotion ? nil : Motion.panelCurve) {
+        withAnimation(reduceMotion ? nil : Motion.panel) {
             showPanel = false
         }
     }
@@ -1519,15 +1644,15 @@ private struct SwipeRow<Content: View>: View {
                             guard dragging else { return }
                             dragging = false
                             if offset < -threshold {
-                                withAnimation(.easeOut(duration: Motion.quick)) {
+                                withAnimation(Motion.quick) {
                                     offset = -420
                                 }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + Motion.quick) {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + Motion.quickDelay) {
                                     onDelete()
                                     offset = 0
                                 }
                             } else {
-                                withAnimation(.easeOut(duration: Motion.quick)) {
+                                withAnimation(Motion.quick) {
                                     offset = 0
                                 }
                             }
