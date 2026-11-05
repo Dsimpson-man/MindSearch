@@ -155,12 +155,10 @@ let destinations: [Destination] = [
     destination("拼多多", .shopping, "pinduoduo",
                 app: "pinduoduo://yangkeduo.com/search_result.html?search_key={q}",
                 web: "https://mobile.yangkeduo.com/search_result.html?search_key={q}"),
-    // 闲鱼没有公开的搜索 scheme（search / searchResult 实测都不进搜索页），
-    // 所以只负责打开 App，关键词走剪贴板，进去点搜索框粘贴。
+    // 闲鱼搜索：fleamarket://x_search_items?keyword={q}（2026-11 拿到，可直接带关键词）。
     destination("闲鱼", .shopping, "fleamarket",
-                app: "fleamarket://",
-                web: "https://www.goofish.com/search?q={q}",
-                copy: true),
+                app: "fleamarket://x_search_items?keyword={q}",
+                web: "https://www.goofish.com/search?q={q}"),
 
     // 生活服务
     destination("美团", .life, "imeituan",

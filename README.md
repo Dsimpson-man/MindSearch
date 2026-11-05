@@ -36,6 +36,9 @@ SwiftUI 小工具：输入关键词（或直接说），选一个 App，跳到�
 ## 已知问题
 
 - 第三方 App 深链是私有约定，可能随对方版本升级失效；设置里长按应用可改 URL。
+- 列表左滑删除当前不生效（列表用的是 `ScrollView + LazyVStack`，`swipeActions` 只在 `List` 内有效），请用长按菜单删除。
+- 回车在同一手势下有两种结果（搜索 / 存为想法），由字数阈值决定且事前不可见；可见化改造排期见 [`docs/UI-REVIEW.md`](docs/UI-REVIEW.md)。
+- 完整的评审、优先级与落地排期见 [`docs/UI-REVIEW.md`](docs/UI-REVIEW.md)。
 - DeepSeek 的 `dpsk://` 只能唤起 App，不能带文本（「问问 DeepSeek」是 App Intent，不是 URL scheme），已改成剪贴板模式。
 - 剪贴板模式需要你进 App 后手动长按粘贴，iOS 不允许跨 App 自动粘贴。
 - 锁屏组件点击后需要解锁，无法在锁屏状态下直接完成跳转。
@@ -51,7 +54,7 @@ v2.0 起是冥想化的安静风格：暖雾白底、炭墨字、雾绿强调，
 - 关键词槽按字数自动判断：短文本回车搜索，超过阈值（默认 20 字，设置里可调）回车存为想法。
 - 应用槽空着就用默认应用，没有默认应用回车会提示先写关键词。没有应用选择页，全靠打字。
 - 点想法或记录，会从底部升起「换个应用」面板：关键词已填好、可以再改，换完应用回车直接搜索。
-- 记录按「今天 / 昨天 / 更早」分组，条目用 0.5pt 细线分隔，左滑删除。
+- 记录按「今天 / 昨天 / 更早」分组，条目用 0.5pt 细线分隔；当前删除走长按菜单（左滑删除待修复）。
 - 没装对应 App 时弹窗询问，可用网页搜索兜底。
 - 右上角图标进设置：默认 APP、想法判定字数、每个 APP 的别名与跳转地址。
 - 所有动效是 0.45–0.9 秒的 `easeInOut`，不用弹跳。
@@ -88,7 +91,7 @@ v2.0 起是冥想化的安静风格：暖雾白底、炭墨字、雾绿强调，
 | 购物 | 天猫 | `tmall://page.tm/search?q={q}` |
 | 购物 | 京东 | `openapp.jdmobile://virtual?params={JSON}` |
 | 购物 | 拼多多 | `pinduoduo://yangkeduo.com/search_result.html?search_key={q}` |
-| 购物 | 闲鱼 | `fleamarket://` + 剪贴板（官方没有搜索 scheme） |
+| 购物 | 闲鱼 | `fleamarket://x_search_items?keyword={q}` |
 | 生活服务 | 美团 | `imeituan://www.meituan.com/search?q={q}` |
 | 生活服务 | 大众点评 | `dianping://searchshoplist?keyword={q}` |
 | 生活服务 | 饿了么 | `eleme://search?keyword={q}` |
