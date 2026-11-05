@@ -81,9 +81,10 @@ struct SettingsView: View {
     private var defaultAppSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionTitle("默认 APP")
-            Text("每次启动自动填入这个应用。")
+            Text("启动时自动填入应用槽；应用槽空着时也用它搜索。")
                 .font(Theme.mono(11))
                 .foregroundColor(Theme.faded)
+                .fixedSize(horizontal: false, vertical: true)
 
             toggleRow("启用默认 APP", isOn: $store.useDefaultApp)
 
@@ -116,9 +117,10 @@ struct SettingsView: View {
     private var thresholdSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionTitle("想法判定")
-            Text("超过这个字数，回车存为想法。")
+            Text("超过这个字数，右下角出现「存为想法」。回车永远是搜索。")
                 .font(Theme.mono(11))
                 .foregroundColor(Theme.faded)
+                .fixedSize(horizontal: false, vertical: true)
 
             HStack {
                 Text("\(store.ideaThreshold) 字")

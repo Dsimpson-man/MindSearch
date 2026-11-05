@@ -12,6 +12,11 @@ enum Theme {
                              dark:  (0.929, 0.910, 0.874))     // #EDE8DF 暖白
     static let accent = dynamic(light: (0.420, 0.478, 0.416),  // #6B7A6A 雾绿
                                 dark:  (0.659, 0.710, 0.627))  // #A8B5A0 亮雾绿
+    static let danger = dynamic(light: (0.627, 0.302, 0.259),  // #A04D42 砖红
+                                dark:  (0.550, 0.270, 0.230))  // #8C453B
+    /// 红底上的字：不跟深色模式翻，否则会变成深底深字
+    static let onDanger = Color(red: 0.957, green: 0.945, blue: 0.918)
+
     static let faded = ink.opacity(0.42)
     static let hairline = ink.opacity(0.10)
 
@@ -61,52 +66,80 @@ enum Theme {
     }
 }
 
-/// 按下去轻轻缩一下；慢一点，不弹
-struct PressableStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.95 : 1)
-            .opacity(configuration.isPressed ? 0.85 : 1)
-            .animation(.easeInOut(duration: 0.28), value: configuration.isPressed)
+// MARK: - 动效：四档，硬上限 360ms
+
+enum Motion {
+    static let press: Double = 0.09
+    static let quick: Double = 0.18
+    static let page: Double = 0.22
+    static let panel: Double = 0.34
+    static let fly: Double = 0.32
+
+    static func ease(_ duration: Double) -> Animation {
+        .timingCurve(0.16, 1, 0.3, 1, duration: duration)
+    }
+
+    static var panelCurve: Animation {
+        .timingCurve(0.2, 1.08, 0.3, 1, duration: panel)
     }
 }
 
-/// 主按钮：待机时缓慢呼吸，有内容时收紧成实心圆
-private struct BreathingSubmitButton: View {
-    let active: Bool
-    let action: () -> Void
+/// 按下去是「咔」的一下，不是陷进棉花
+struct PressableStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .opacity(configuration.isPressed ? 0.9 : 1)
+            .animation(Motion.ease(Motion.press), value: configuration.isPressed)
+    }
+}
 
-    @State private var breathe = false
+// MARK: - 主按钮：静止的环，有关键词时收紧成实心圆
+
+private struct SubmitButton: View {
+    let active: Bool
+    let onTap: () -> Void
+    let onLongPress: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            ZStack {
-                Circle()
-                    .fill(Theme.accent.opacity(active ? 0.10 : 0.04))
-                    .overlay(
-                        Circle().stroke(Theme.accent.opacity(active ? 0.28 : 0.14),
-                                        lineWidth: 0.8)
-                    )
-                    .frame(width: 72, height: 72)
-                    .scaleEffect(breathe && !active ? 1.08 : 0.96)
+        ZStack {
+            Circle()
+                .fill(Theme.accent.opacity(active ? 0.10 : 0.04))
+                .overlay(
+                    Circle().stroke(Theme.accent.opacity(active ? 0.28 : 0.14),
+                                    lineWidth: 0.8)
+                )
+                .frame(width: 72, height: 72)
 
-                Circle()
-                    .fill(active ? Theme.accent : Theme.ink.opacity(0.72))
-                    .frame(width: 46, height: 46)
+            Circle()
+                .fill(active ? Theme.accent : Theme.ink.opacity(0.72))
+                .frame(width: 46, height: 46)
+                .scaleEffect(active ? 1 : 0.94)
 
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(Theme.paper)
-            }
+            Image(systemName: "arrow.right")
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(Theme.paper)
         }
-        .buttonStyle(PressableStyle())
-        .accessibilityLabel("搜索或存为想法")
-        .onAppear {
-            withAnimation(.easeInOut(duration: 3.4).repeatForever(autoreverses: true)) {
-                breathe = true
+        .contentShape(Circle())
+        .gesture(
+            ExclusiveGesture(
+                LongPressGesture(minimumDuration: 0.45),
+                TapGesture()
+            )
+            .onEnded { value in
+                switch value {
+                case .first: onLongPress()
+                case .second: onTap()
+                }
             }
-        }
-        .animation(.easeInOut(duration: 0.6), value: active)
+        )
+        .animation(Motion.ease(Motion.quick), value: active)
+        .accessibilityElement()
+        .accessibilityLabel("搜索")
+        .accessibilityHint("长按存为想法")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { onTap() }
+        .accessibilityAction(named: "存为想法") { onLongPress() }
     }
 }
 
@@ -258,12 +291,35 @@ private struct PendingWeb: Identifiable {
     let text: String
 }
 
+// MARK: - 记录锚点（存想法时飞向底部入口）
+
+private struct AnchorFrames: PreferenceKey {
+    static var defaultValue: [String: CGRect] = [:]
+    static func reduce(value: inout [String: CGRect], nextValue: () -> [String: CGRect]) {
+        value.merge(nextValue()) { $1 }
+    }
+}
+
+private extension View {
+    func anchorFrame(_ name: String) -> some View {
+        background(
+            GeometryReader { proxy in
+                Color.clear.preference(key: AnchorFrames.self,
+                                       value: [name: proxy.frame(in: .named("root"))])
+            }
+        )
+    }
+}
+
 // MARK: - 主界面
 struct ContentView: View {
     @StateObject private var store = Store()
     @StateObject private var voice = VoiceInput()
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     @State private var keyword = ""
+    @State private var keywordHeight: CGFloat = 42
     @State private var appText = ""
     @State private var keywordFocused = false
     @State private var appFocused = false
@@ -274,25 +330,62 @@ struct ContentView: View {
     @State private var message: String? = nil
     @State private var showSettings = false
     @State private var pendingWeb: PendingWeb? = nil
+    @State private var showClearConfirm = false
 
     @State private var showPanel = false
     @State private var panelKeyword = ""
+    @State private var panelKeywordHeight: CGFloat = 38
     @State private var panelApp = ""
     @State private var panelKeywordFocused = false
     @State private var panelAppFocused = false
     @State private var panelKeywordComposing = false
     @State private var panelAppComposing = false
 
+    @State private var editingIdea: UUID? = nil
+    @State private var ideaDraft = ""
+    @State private var ideaDraftHeight: CGFloat = 20
+    @State private var ideaFocused = false
+    @State private var ideaComposing = false
+
     @State private var voiceBase = ""
-    @State private var pulse = false
     @State private var appeared = false
+
+    @State private var anchors: [String: CGRect] = [:]
+    @State private var fly: CGFloat = 0
 
     // 小组件传进来的动作，等界面就绪后再执行
     @State private var pendingWidgetLink: WidgetDeepLink? = nil
 
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
 
-    @Namespace private var tabNamespace
+    // MARK: 尺寸
+
+    private var keywordUIFont: UIFont { Theme.serifUIFont(25) }
+    private let keywordMinHeight: CGFloat = 42
+    private let keywordMaxHeight: CGFloat = 108
+
+    private var keywordLabelTop: CGFloat {
+        FieldMetrics.labelTop(fieldFont: keywordUIFont,
+                              minHeight: keywordMinHeight,
+                              labelFont: Theme.serifUIFont(19))
+    }
+
+    private var panelKeywordUIFont: UIFont { Theme.serifUIFont(21) }
+    private let panelKeywordMinHeight: CGFloat = 38
+    private let panelKeywordMaxHeight: CGFloat = 96
+
+    private var panelKeywordLabelTop: CGFloat {
+        FieldMetrics.labelTop(fieldFont: panelKeywordUIFont,
+                              minHeight: panelKeywordMinHeight,
+                              labelFont: Theme.serifUIFont(16))
+    }
+
+    private var ideaUIFont: UIFont { Theme.serifUIFont(15.5) }
+    private let ideaLineSpacing: CGFloat = 8
+
+    private func animate(_ duration: Double) -> Animation? {
+        reduceMotion ? nil : Motion.ease(duration)
+    }
 
     var body: some View {
         ZStack {
@@ -319,6 +412,19 @@ struct ContentView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
+            if fly > 0,
+               let from = anchors["submit"],
+               let to = anchors["ideasTab"] {
+                Circle()
+                    .fill(Theme.accent)
+                    .frame(width: 7, height: 7)
+                    .position(
+                        x: from.midX + (to.midX - from.midX) * fly,
+                        y: from.midY + (to.midY - from.midY) * fly - sin(fly * .pi) * 22
+                    )
+                    .allowsHitTesting(false)
+            }
+
             if showSettings {
                 SettingsView(store: store) {
                     showSettings = false
@@ -337,11 +443,11 @@ struct ContentView: View {
             }
 
             if !hasSeenOnboarding {
-                OnboardingView {
-                    withAnimation(.easeInOut(duration: 0.6)) {
+                OnboardingView(threshold: store.ideaThreshold) {
+                    withAnimation(animate(Motion.page)) {
                         hasSeenOnboarding = true
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         appFocused = true
                     }
                 }
@@ -349,26 +455,18 @@ struct ContentView: View {
                 .zIndex(20)
             }
         }
-        .animation(.easeInOut(duration: 0.5), value: message)
-        .animation(.easeInOut(duration: 0.5), value: showSettings)
-        .animation(.easeInOut(duration: 0.6), value: showPanel)
-        .animation(.easeInOut(duration: 0.6), value: screen)
-        .animation(.easeInOut(duration: 0.45), value: voice.isRecording)
-        .onChange(of: voice.isRecording) { recording in
-            if recording {
-                pulse = false
-                DispatchQueue.main.async { pulse = true }
-            } else {
-                pulse = false
-            }
-        }
+        .coordinateSpace(name: "root")
+        .onPreferenceChange(AnchorFrames.self) { anchors = $0 }
+        .animation(animate(Motion.quick), value: message)
+        .animation(animate(Motion.page), value: showSettings)
+        .animation(reduceMotion ? nil : Motion.panelCurve, value: showPanel)
+        .animation(animate(Motion.page), value: screen)
+        .animation(animate(Motion.quick), value: voice.isRecording)
         .onAppear {
             if store.useDefaultApp, appText.isEmpty, !store.defaultAppName.isEmpty {
                 appText = store.defaultAppName
             }
-            withAnimation(.easeInOut(duration: 0.9)) {
-                appeared = true
-            }
+            withAnimation(animate(Motion.fly)) { appeared = true }
             // 每次启动都聚焦应用槽；引导、小组件、面板打开时不抢焦点
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 guard hasSeenOnboarding,
@@ -401,18 +499,23 @@ struct ContentView: View {
                 secondaryButton: .cancel(Text("取消"))
             )
         }
+        .confirmationDialog("清空全部记录？",
+                            isPresented: $showClearConfirm,
+                            titleVisibility: .visible) {
+            Button("清空 \(store.history.count) 条记录", role: .destructive) {
+                clearHistory()
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("记录里的关键词和对应应用都会删除，不能恢复。")
+        }
     }
 
     // MARK: - 顶部
 
     private var header: some View {
         HStack {
-            if screen == .search {
-                Text("MINDSEARCH")
-                    .font(Theme.mono(10))
-                    .tracking(2.2)
-                    .foregroundColor(Theme.faded)
-            } else {
+            if screen != .search {
                 Button {
                     dismissKeyboard()
                     screen = .search
@@ -451,31 +554,42 @@ struct ContentView: View {
         .padding(.bottom, 0)
     }
 
-    // MARK: - 一句话输入区（搜索标签页）
+    // MARK: - 一句话输入区
 
     private var sentenceArea: some View {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
 
-            VStack(alignment: .leading, spacing: 30) {
+            VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 18) {
                     sentenceLine("用") { appField }
-                    sentenceLine("搜索") { keywordField }
+                    keywordLine
                 }
+
+                recentAppsRow
 
                 HStack(alignment: .center, spacing: 12) {
                     micButton
                     Spacer(minLength: 8)
-                    if showIdeaHint {
-                        Text("\(trimmedKeyword.count) 字 · 存为想法")
-                            .font(Theme.mono(10))
-                            .foregroundColor(Theme.faded)
-                            .lineLimit(1)
+                    if showIdeaButton {
+                        Button {
+                            saveIdea(trimmedKeyword)
+                        } label: {
+                            Text("存为想法")
+                                .font(Theme.mono(11))
+                                .foregroundColor(Theme.accent)
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 2)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(PressableStyle())
+                        .accessibilityHint("也可以长按右边的搜索按钮")
                     }
                     submitButton
                 }
                 .padding(.top, 4)
             }
+            .animation(animate(Motion.quick), value: showRecentApps)
             .opacity(appeared ? 1 : 0)
             .offset(y: appeared ? 0 : 12)
             .padding(.horizontal, 32)
@@ -503,6 +617,27 @@ struct ContentView: View {
         }
     }
 
+    /// 多行输入行：标签对齐第一行文字，下划线跟着输入框的底边走
+    private func multilineLine<Content: View>(_ label: String,
+                                              size: CGFloat,
+                                              labelTop: CGFloat,
+                                              @ViewBuilder content: () -> Content) -> some View {
+        HStack(alignment: .top, spacing: 16) {
+            Text(label)
+                .font(Theme.serif(size))
+                .foregroundColor(Theme.faded)
+                .frame(width: 40, alignment: .leading)
+                .padding(.top, labelTop)
+            content()
+        }
+        .padding(.bottom, 9)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Theme.hairline)
+                .frame(height: 0.5)
+        }
+    }
+
     private var appField: some View {
         AppNameField(
             text: $appText,
@@ -516,19 +651,51 @@ struct ContentView: View {
         .frame(height: 42)
     }
 
-    private var keywordField: some View {
-        UIKitTextField(
-            text: $keyword,
-            isFocused: $keywordFocused,
-            isComposing: $keywordComposing,
-            placeholder: "想搜什么",
-            font: Theme.serifUIFont(25),
-            returnKey: .search,
-            onSubmit: { submit() },
-            onHoldStart: { beginHoldVoice() },
-            onHoldEnd: { endHoldVoice() }
-        )
-        .frame(height: 42)
+    private var keywordLine: some View {
+        multilineLine("搜索", size: 19, labelTop: keywordLabelTop) {
+            GrowingTextView(
+                text: $keyword,
+                isFocused: $keywordFocused,
+                isComposing: $keywordComposing,
+                height: $keywordHeight,
+                placeholder: "想搜什么",
+                font: keywordUIFont,
+                minHeight: keywordMinHeight,
+                maxHeight: keywordMaxHeight,
+                onSubmit: { submit() }
+            )
+            .frame(height: keywordHeight)
+            .animation(animate(Motion.quick), value: keywordHeight)
+        }
+    }
+
+    /// 应用槽空着、还没开始打字时，给三个最近用过的应用
+    @ViewBuilder
+    private var recentAppsRow: some View {
+        if showRecentApps {
+            HStack(spacing: 14) {
+                Text("最近")
+                    .font(Theme.mono(10))
+                    .foregroundColor(Theme.faded)
+
+                ForEach(recentApps, id: \.self) { name in
+                    Button {
+                        pickRecent(name)
+                    } label: {
+                        Text(name)
+                            .font(Theme.mono(11))
+                            .foregroundColor(Theme.accent)
+                            .padding(.vertical, 6)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(PressableStyle())
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(.leading, 56)
+            .transition(.opacity)
+        }
     }
 
     private var micButton: some View {
@@ -547,7 +714,10 @@ struct ContentView: View {
     }
 
     private var submitButton: some View {
-        BreathingSubmitButton(active: !trimmedKeyword.isEmpty) { submit() }
+        SubmitButton(active: !trimmedKeyword.isEmpty,
+                     onTap: { submit() },
+                     onLongPress: { submitAsIdea() })
+            .anchorFrame("submit")
     }
 
     // MARK: - 底部搜索面板
@@ -592,17 +762,20 @@ struct ContentView: View {
                     .frame(height: 38)
                 }
 
-                sentenceLine("搜索", size: 16) {
-                    UIKitTextField(
+                multilineLine("搜索", size: 16, labelTop: panelKeywordLabelTop) {
+                    GrowingTextView(
                         text: $panelKeyword,
                         isFocused: $panelKeywordFocused,
                         isComposing: $panelKeywordComposing,
+                        height: $panelKeywordHeight,
                         placeholder: "想搜什么",
-                        font: Theme.serifUIFont(21),
-                        returnKey: .search,
+                        font: panelKeywordUIFont,
+                        minHeight: panelKeywordMinHeight,
+                        maxHeight: panelKeywordMaxHeight,
                         onSubmit: { panelSearch() }
                     )
-                    .frame(height: 38)
+                    .frame(height: panelKeywordHeight)
+                    .animation(animate(Motion.quick), value: panelKeywordHeight)
                 }
 
                 HStack {
@@ -628,7 +801,7 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - 内容区（三个标签页）
+    // MARK: - 内容区
 
     @ViewBuilder
     private var content: some View {
@@ -648,33 +821,89 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    // MARK: - 想法（卡片，就地编辑）
+
     private var ideasList: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 0) {
+            LazyVStack(alignment: .leading, spacing: 12) {
                 if store.ideas.isEmpty {
-                    emptyState("还没有想法。\n写长一点，回车就留在这里。")
+                    emptyState("还没有想法。\n写得长一点，右下角会出现「存为想法」。")
                 }
                 ForEach(store.ideas) { idea in
-                    listRow(idea.text)
-                        .onTapGesture { openPanel(keyword: idea.text, app: store.defaultAppName) }
-                        .contextMenu {
-                            Button("删除", role: .destructive) {
-                                store.ideas.removeAll { $0.id == idea.id }
-                            }
-                        }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                store.ideas.removeAll { $0.id == idea.id }
-                            } label: {
-                                Label("删除", systemImage: "trash")
-                            }
-                        }
+                    ideaCard(idea)
                 }
             }
-            .padding(.horizontal, 28)
+            .padding(.horizontal, 24)
             .padding(.vertical, 18)
         }
     }
+
+    private func ideaCard(_ idea: IdeaItem) -> some View {
+        let editing = editingIdea == idea.id
+
+        return VStack(alignment: .leading, spacing: 10) {
+            if editing {
+                GrowingTextView(
+                    text: $ideaDraft,
+                    isFocused: $ideaFocused,
+                    isComposing: $ideaComposing,
+                    height: $ideaDraftHeight,
+                    placeholder: "",
+                    font: ideaUIFont,
+                    minHeight: ceil(ideaUIFont.lineHeight),
+                    maxHeight: 180,
+                    lineSpacing: ideaLineSpacing,
+                    onSubmit: { commitIdeaEdit() }
+                )
+                .frame(height: ideaDraftHeight)
+                .animation(animate(Motion.quick), value: ideaDraftHeight)
+            } else {
+                Text(idea.text)
+                    .font(Theme.serif(15.5))
+                    .lineSpacing(ideaLineSpacing)
+                    .foregroundColor(Theme.ink)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            HStack(spacing: 10) {
+                Spacer(minLength: 0)
+                if editing {
+                    Button("完成") { commitIdeaEdit() }
+                        .accessibilityLabel("完成编辑")
+                } else {
+                    Button {
+                        deleteIdea(idea)
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 11))
+                            .frame(width: 32, height: 26)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("删除这条想法")
+                }
+            }
+            .font(Theme.mono(10))
+            .foregroundColor(Theme.faded)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .padding(.bottom, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Theme.card)
+        )
+        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .onTapGesture {
+            if !editing { beginIdeaEdit(idea) }
+        }
+        .contextMenu {
+            Button("删除", role: .destructive) { deleteIdea(idea) }
+        }
+        .animation(animate(Motion.quick), value: editing)
+    }
+
+    // MARK: - 记录（行，左滑删除）
 
     private var historyList: some View {
         ScrollView {
@@ -685,9 +914,10 @@ struct ContentView: View {
                         .foregroundColor(Theme.faded)
                     Spacer()
                     if !store.history.isEmpty {
-                        Button("清空") { store.history.removeAll() }
+                        Button("清空") { showClearConfirm = true }
                             .font(Theme.mono(10))
                             .foregroundColor(Theme.faded)
+                            .buttonStyle(PressableStyle())
                     }
                 }
                 .padding(.bottom, 4)
@@ -705,23 +935,20 @@ struct ContentView: View {
                         .padding(.bottom, 4)
 
                     ForEach(group.items) { h in
-                        listRow(h.text, trailing: h.app)
-                            .onTapGesture {
-                                let app = destinations.first(where: { $0.name == h.app })?.name
-                                openPanel(keyword: h.text, app: app ?? store.defaultAppName)
-                            }
-                            .contextMenu {
-                                Button("删除", role: .destructive) {
-                                    store.history.removeAll { $0.id == h.id }
-                                }
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    store.history.removeAll { $0.id == h.id }
-                                } label: {
-                                    Label("删除", systemImage: "trash")
-                                }
-                            }
+                        SwipeRow(onDelete: { deleteHistory(h) }) {
+                            listRow(h.text, trailing: h.app)
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            let app = destinations.first(where: { $0.name == h.app })?.name
+                            openPanel(keyword: h.text,
+                                      app: app
+                                        ?? recentApps.first
+                                        ?? (store.useDefaultApp ? store.defaultAppName : ""))
+                        }
+                        .contextMenu {
+                            Button("删除", role: .destructive) { deleteHistory(h) }
+                        }
                     }
                 }
             }
@@ -761,8 +988,13 @@ struct ContentView: View {
                 let selected = screen == item
                 Button {
                     dismissKeyboard()
-                    // 再点一次当前入口就回到搜索
-                    screen = selected ? .search : item
+                    if selected {
+                        // 再点一次当前入口就回到搜索
+                        screen = .search
+                    } else {
+                        UISelectionFeedbackGenerator().selectionChanged()
+                        screen = item
+                    }
                 } label: {
                     VStack(spacing: 5) {
                         Circle()
@@ -777,6 +1009,7 @@ struct ContentView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(PressableStyle())
+                .anchorFrame(item == .ideas ? "ideasTab" : "historyTab")
                 .accessibilityLabel(item.rawValue)
                 .accessibilityAddTraits(selected ? .isSelected : [])
             }
@@ -797,12 +1030,31 @@ struct ContentView: View {
         keyword.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private var showIdeaHint: Bool {
-        !trimmedKeyword.isEmpty && trimmedKeyword.count > store.ideaThreshold
+    /// 超过阈值才露出「存为想法」——回车永远是搜索
+    private var showIdeaButton: Bool {
+        trimmedKeyword.count > store.ideaThreshold
     }
 
+    private var recentApps: [String] {
+        var result: [String] = []
+        for item in store.history.prefix(60) {
+            let name = item.app.replacingOccurrences(of: " · 网页", with: "")
+            guard destinations.contains(where: { $0.name == name }) else { continue }
+            if !result.contains(name) { result.append(name) }
+            if result.count >= 3 { break }
+        }
+        return result
+    }
+
+    private var showRecentApps: Bool {
+        appText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && trimmedKeyword.isEmpty
+            && !recentApps.isEmpty
+    }
+
+    /// 只有打开「启用默认 APP」时，空着的应用槽才落到默认应用
     private var defaultDestination: Destination? {
-        guard !store.defaultAppName.isEmpty else { return nil }
+        guard store.useDefaultApp, !store.defaultAppName.isEmpty else { return nil }
         return destinations.first { $0.name == store.defaultAppName }
     }
 
@@ -858,16 +1110,12 @@ struct ContentView: View {
         }
     }
 
+    /// 回车 = 搜索，任何长度都一样
     private func submit() {
         let text = trimmedKeyword
         guard !text.isEmpty else {
             flash("先写关键词")
             keywordFocused = true
-            return
-        }
-
-        if text.count > store.ideaThreshold {
-            saveIdea(text)
             return
         }
 
@@ -882,21 +1130,103 @@ struct ContentView: View {
         }
     }
 
+    /// 长按主按钮：不看长度，直接存
+    private func submitAsIdea() {
+        let text = trimmedKeyword
+        guard !text.isEmpty else {
+            flash("先写关键词")
+            keywordFocused = true
+            return
+        }
+        saveIdea(text)
+    }
+
     private func saveIdea(_ text: String) {
-        withAnimation(.easeInOut(duration: 0.55)) {
-            store.ideas.insert(IdeaItem(text: text), at: 0)
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        withAnimation(animate(Motion.quick)) {
+            store.ideas.insert(IdeaItem(text: trimmed), at: 0)
             keyword = ""
         }
-        tap(.medium)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
         dismissKeyboard()
         flash("已存为想法")
+        flyToInbox()
+    }
+
+    private func flyToInbox() {
+        guard !reduceMotion,
+              anchors["submit"] != nil,
+              anchors["ideasTab"] != nil else { return }
+        // 先让圆点以「起点」姿态进入视图，再动画到终点
+        fly = 0.001
+        DispatchQueue.main.async {
+            withAnimation(Motion.ease(Motion.fly)) { fly = 1 }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + Motion.fly + 0.05) {
+            fly = 0
+        }
     }
 
     private func search(_ d: Destination, _ text: String) {
-        store.defaultAppName = d.name
-        tap(.medium)
+        tap(.light)
         dismissKeyboard()
         go(d, text)
+    }
+
+    private func pickRecent(_ name: String) {
+        appText = name
+        appFocused = false
+        keywordFocused = true
+        UISelectionFeedbackGenerator().selectionChanged()
+    }
+
+    // MARK: - 想法编辑
+
+    private func beginIdeaEdit(_ idea: IdeaItem) {
+        if editingIdea != nil { commitIdeaEdit() }
+        dismissKeyboard()
+        ideaDraft = idea.text
+        ideaDraftHeight = ceil(ideaUIFont.lineHeight)
+        editingIdea = idea.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            ideaFocused = true
+        }
+    }
+
+    private func commitIdeaEdit() {
+        guard let id = editingIdea else { return }
+        let text = ideaDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !text.isEmpty, let index = store.ideas.firstIndex(where: { $0.id == id }) {
+            store.ideas[index].text = text
+        }
+        editingIdea = nil
+        ideaDraft = ""
+        ideaFocused = false
+        UISelectionFeedbackGenerator().selectionChanged()
+    }
+
+    private func deleteIdea(_ idea: IdeaItem) {
+        if editingIdea == idea.id { editingIdea = nil }
+        withAnimation(animate(Motion.quick)) {
+            store.ideas.removeAll { $0.id == idea.id }
+        }
+        tap()
+    }
+
+    private func deleteHistory(_ item: HistoryItem) {
+        withAnimation(animate(Motion.quick)) {
+            store.history.removeAll { $0.id == item.id }
+        }
+        tap()
+    }
+
+    private func clearHistory() {
+        withAnimation(animate(Motion.quick)) {
+            store.history.removeAll()
+        }
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
     // MARK: - 面板动作
@@ -904,7 +1234,8 @@ struct ContentView: View {
     private func openPanel(keyword text: String, app: String?) {
         dismissKeyboard()
         panelKeyword = text
-        panelApp = app ?? store.defaultAppName
+        panelKeywordHeight = panelKeywordMinHeight
+        panelApp = app ?? ""
         showPanel = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             panelAppFocused = true
@@ -914,7 +1245,7 @@ struct ContentView: View {
     private func closePanel() {
         panelKeywordFocused = false
         panelAppFocused = false
-        withAnimation(.easeInOut(duration: 0.5)) {
+        withAnimation(reduceMotion ? nil : Motion.panelCurve) {
             showPanel = false
         }
     }
@@ -974,23 +1305,6 @@ struct ContentView: View {
         }, onError: { message in
             flash(message)
         })
-    }
-
-    /// 按住关键词区域说话
-    private func beginHoldVoice() {
-        guard !voice.isRecording, !voice.isStarting else { return }
-        dismissKeyboard()
-        voiceBase = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
-        voice.toggle(onText: { text in
-            let base = voiceBase
-            keyword = base.isEmpty ? text : base + " " + text
-        }, onError: { message in
-            flash(message)
-        })
-    }
-
-    private func endHoldVoice() {
-        voice.stop()
     }
 
     // MARK: - 小组件唤起
@@ -1080,6 +1394,8 @@ struct ContentView: View {
         appFocused = false
         panelKeywordFocused = false
         panelAppFocused = false
+        ideaFocused = false
+        if editingIdea != nil { commitIdeaEdit() }
     }
 
     private func flash(_ text: String) {
@@ -1129,6 +1445,65 @@ struct ContentView: View {
     }
 }
 
+// MARK: - 左滑删除（自建手势，保留无边框 + 细线的排版）
+
+private struct SwipeRow<Content: View>: View {
+    let onDelete: () -> Void
+    @ViewBuilder let content: () -> Content
+
+    @State private var offset: CGFloat = 0
+    @State private var dragging = false
+
+    private let threshold: CGFloat = 72
+
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            if offset < 0 {
+                Rectangle()
+                    .fill(Theme.danger)
+                    .frame(width: -offset)
+                    .overlay(alignment: .trailing) {
+                        Text("删除")
+                            .font(Theme.mono(12))
+                            .foregroundColor(Theme.onDanger)
+                            .padding(.trailing, 20)
+                    }
+                    .clipped()
+            }
+
+            content()
+                .offset(x: offset)
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 10)
+                        .onChanged { value in
+                            guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                            dragging = true
+                            offset = min(0, value.translation.width)
+                        }
+                        .onEnded { _ in
+                            guard dragging else { return }
+                            dragging = false
+                            if offset < -threshold {
+                                withAnimation(.easeOut(duration: Motion.quick)) {
+                                    offset = -420
+                                }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + Motion.quick) {
+                                    onDelete()
+                                    offset = 0
+                                }
+                            } else {
+                                withAnimation(.easeOut(duration: Motion.quick)) {
+                                    offset = 0
+                                }
+                            }
+                        }
+                )
+        }
+        .clipped()
+        .accessibilityAction(named: "删除") { onDelete() }
+    }
+}
+
 // MARK: - 应用名输入框（带幽灵预览）
 
 private struct AppNameField: View {
@@ -1168,59 +1543,6 @@ private struct AppNameField: View {
 
     private var textWidth: CGFloat {
         (text as NSString).size(withAttributes: [.font: font]).width
-    }
-}
-
-// MARK: - 水滴融合标签指示器
-
-private struct LiquidIndicator: View {
-    let centers: [CGFloat]
-    let selectedIndex: Int
-    let height: CGFloat
-
-    @State private var fromIndex = 0
-    @State private var toIndex = 0
-    @State private var lastChange = Date()
-    @State private var ready = false
-
-    private var ink: SIMD3<Float> { SIMD3(0.17, 0.13, 0.10) }
-
-    var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { context in
-            let t = context.date.timeIntervalSince(lastChange)
-            let p = springProgress(t)
-            let main = lerp(centers[fromIndex], centers[toIndex], p)
-            let trail = lerp(centers[fromIndex], centers[toIndex], max(0, p - 0.16))
-
-            MetaballView(
-                blobs: [
-                    MetaballBlob(center: SIMD2(Float(main), Float(height / 2)), radius: 16, weight: 1.0),
-                    MetaballBlob(center: SIMD2(Float(trail), Float(height / 2)), radius: 13, weight: 0.7)
-                ],
-                tint: ink
-            )
-        }
-        .onAppear {
-            toIndex = selectedIndex
-            fromIndex = selectedIndex
-            ready = true
-        }
-        .onChange(of: selectedIndex) { newValue in
-            guard ready else { return }
-            fromIndex = toIndex
-            toIndex = newValue
-            lastChange = Date()
-        }
-    }
-
-    private func springProgress(_ t: TimeInterval) -> CGFloat {
-        guard t > 0 else { return 0 }
-        let p = 1 - exp(-7 * t) * cos(10 * t)
-        return min(1.25, max(0, CGFloat(p)))
-    }
-
-    private func lerp(_ a: CGFloat, _ b: CGFloat, _ t: CGFloat) -> CGFloat {
-        a + (b - a) * t
     }
 }
 

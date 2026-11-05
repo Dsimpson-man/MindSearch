@@ -2,6 +2,8 @@ import SwiftUI
 
 /// 首次打开的三页引导：一句话搜索、首字母识别、长文本存想法。
 struct OnboardingView: View {
+    /// 想法判定字数跟着设置走，不写死
+    let threshold: Int
     let onFinish: () -> Void
 
     @State private var page = 0
@@ -13,17 +15,19 @@ struct OnboardingView: View {
         let hint: String
     }
 
-    private let pages: [Page] = [
-        Page(title: "用一句话\n去任何地方",
-             body: "选一个应用，写下想搜的，回车就走。",
-             hint: "用（小红书）搜索（露营装备）"),
-        Page(title: "输入 XH\n就是小红书",
-             body: "汉字、拼音、首字母、别名，都能认出来。",
-             hint: "xhs · xy · wb · dy · tb"),
-        Page(title: "长一点的想法\n会留下来",
-             body: "超过 20 字回车，存进「想法」；搜过的都在「记录」。",
-             hint: "想搜什么，先写下来")
-    ]
+    private var pages: [Page] {
+        [
+            Page(title: "用一句话\n去任何地方",
+                 body: "选一个应用，写下想搜的，回车就走。",
+                 hint: "用（小红书）搜索（露营装备）"),
+            Page(title: "输入 XH\n就是小红书",
+                 body: "汉字、拼音、首字母、别名，都能认出来。",
+                 hint: "xhs · xy · wb · dy · tb"),
+            Page(title: "长一点的想法\n会留下来",
+                 body: "超过 \(threshold) 字，右下角会出现「存为想法」。回车永远是搜索。",
+                 hint: "想搜什么，先写下来")
+        ]
+    }
 
     var body: some View {
         ZStack {

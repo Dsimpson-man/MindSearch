@@ -46,7 +46,8 @@ private let searchKeys: [String: (pinyin: String, initials: String)] = [
     "Spotify": ("spotify", "sp"),
     "DeepSeek": ("deepseek", "ds"),
     "Kimi": ("kimi", "kimi"),
-    "豆包": ("doubao", "db"),
+    // 豆瓣已经占了 db，豆包用 dbk，否则输入 db 永远只认出豆瓣
+    "豆包": ("doubao", "dbk"),
     "文小言": ("wenxiaoyan", "wxy"),
     "通义": ("tongyi", "ty"),
     "腾讯元宝": ("yuanbao", "yb"),

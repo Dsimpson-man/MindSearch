@@ -322,7 +322,7 @@
 				CODE_SIGN_ENTITLEMENTS = JumpSearch/JumpSearch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JLJH3T9W5A;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -331,7 +331,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 3.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -347,7 +347,7 @@
 				CODE_SIGN_ENTITLEMENTS = JumpSearch/JumpSearch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JLJH3T9W5A;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -356,7 +356,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 3.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -372,7 +372,7 @@
 				CODE_SIGN_ENTITLEMENTS = MindSearchWidget/MindSearchWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JLJH3T9W5A;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MindSearchWidget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -380,7 +380,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 3.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch.Widget;
 				PRODUCT_NAME = MindSearchWidget;
 				SKIP_INSTALL = YES;
@@ -397,7 +397,7 @@
 				CODE_SIGN_ENTITLEMENTS = MindSearchWidget/MindSearchWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JLJH3T9W5A;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MindSearchWidget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -405,7 +405,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 3.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.humengdie.JumpSearch.Widget;
 				PRODUCT_NAME = MindSearchWidget;
 				SKIP_INSTALL = YES;
