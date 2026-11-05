@@ -104,6 +104,8 @@ v2.0 起是冥想化的安静风格：暖雾白底、炭墨字、雾绿强调，
 | AI | 腾讯元宝 | `https://yuanbao.tencent.com/chat?q={q}` + 剪贴板兜底 |
 | AI | ChatGPT | `https://chatgpt.com/?q={q}` + 剪贴板兜底 |
 
+深链怎么找、怎么拼、怎么加白名单，以及新增一个 App 的标准流程，见 [`docs/URL-SCHEMES.md`](docs/URL-SCHEMES.md)。
+
 ### 剪贴板模式
 
 DeepSeek 的 `dpsk://` 只能打开 App，URL 带不进文字（「问问 DeepSeek」是 App Intent，不是 URL scheme）。所以这些 AI 改成：**先把关键词复制到剪贴板 → 再打开 App → 你进去长按输入框粘贴**。会震动提示一下，设置里的应用列表带 📋 图标的就是这一类。
