@@ -10,9 +10,15 @@ struct SettingsView: View {
     @State private var aliasDraft = ""
     @State private var editingURLApp: Destination? = nil
 
+    @AppStorage("inkTheme") private var inkThemeRaw = InkLineTheme.ridge.rawValue
+
+    private var inkTheme: InkLineTheme {
+        InkLineTheme(rawValue: inkThemeRaw) ?? .ridge
+    }
+
     var body: some View {
         ZStack {
-            HazeBackground()
+            InkBackground(theme: inkTheme)
 
             VStack(spacing: 0) {
                 header
@@ -26,6 +32,7 @@ struct SettingsView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 30) {
+                        inkSection
                         defaultAppSection
                         thresholdSection
                         aliasSection
@@ -75,6 +82,49 @@ struct SettingsView: View {
             }
             .buttonStyle(PressableStyle())
             .accessibilityLabel("关闭设置")
+        }
+    }
+
+    private var inkSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionTitle("背景线")
+            Text("同一套界面，换一层纸上的笔触。滚动列表时远慢近快。")
+                .font(Theme.mono(11))
+                .foregroundColor(Theme.faded)
+                .fixedSize(horizontal: false, vertical: true)
+
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3),
+                spacing: 14
+            ) {
+                ForEach(InkLineTheme.allCases) { theme in
+                    Button {
+                        withAnimation(Motion.quick) { inkThemeRaw = theme.rawValue }
+                    } label: {
+                        VStack(spacing: 7) {
+                            InkThemePreview(theme: theme)
+                                .frame(height: 62)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .strokeBorder(
+                                            inkThemeRaw == theme.rawValue
+                                                ? Theme.ink.opacity(0.75)
+                                                : Theme.hairline,
+                                            lineWidth: inkThemeRaw == theme.rawValue ? 1.6 : 0.8
+                                        )
+                                )
+
+                            Text(theme.title)
+                                .font(Theme.mono(10))
+                                .foregroundColor(inkThemeRaw == theme.rawValue ? Theme.ink : Theme.faded)
+                        }
+                    }
+                    .buttonStyle(PressableStyle())
+                    .accessibilityLabel("背景线 \(theme.title)")
+                    .accessibilityAddTraits(inkThemeRaw == theme.rawValue ? [.isSelected] : [])
+                }
+            }
         }
     }
 

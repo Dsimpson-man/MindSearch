@@ -2,6 +2,18 @@
 
 SwiftUI 小工具：输入关键词（或直接说），选一个 App，跳到它的搜索结果。想法和搜索记录存在本地。**v1.1 起带主屏和锁屏小组件。**
 
+## 视觉：水墨玻璃（v3.2）
+
+![首页](screenshot-ink.jpg)
+
+- 六套背景线：远山 / 等高线 / 飞白 / 涟漪 / 经纬 / 一笔。设置 → 背景线里切换，选择会记住。
+- 列表滚动时背景线分层移动：远慢近快；静止时不动，不烧电。
+- 可点的 HTML 原型（四页 + 主题切换）：`docs/design/mindsearch-app.html`。
+
+| 想法 | 设置 |
+| --- | --- |
+| ![想法](screenshot-ink-ideas.jpg) | ![设置](screenshot-ink-settings.jpg) |
+
 ## 跑起来
 
 1. 打开 `JumpSearch.xcodeproj`（工程名沿用旧名，App 显示名是 MindSearch）。

@@ -8,31 +8,33 @@ import WidgetKit
 // 所有表面用磨砂玻璃，文字仍然压到接近炭黑，保证对比度。
 enum Theme {
     // 底色
-    static let paper = dynamic(light: (0.906, 0.898, 0.886),   // #E7E5E2 雾灰
-                               dark:  (0.086, 0.082, 0.098))   // #161519 夜雾
-    static let skyTop = dynamic(light: (0.929, 0.918, 0.902),  // #EDEAE6
-                                dark:  (0.106, 0.102, 0.121))  // #1B1A1F
-    static let skyBottom = dynamic(light: (0.867, 0.863, 0.863), // #DDDCDC
-                                   dark:  (0.067, 0.063, 0.078)) // #111014
-    static let ink = dynamic(light: (0.227, 0.216, 0.204),     // #3A3734
-                             dark:  (0.902, 0.886, 0.867))     // #E6E2DD
-    static let accent = dynamic(light: (0.463, 0.514, 0.463),  // #768376 雾绿灰
-                                dark:  (0.678, 0.725, 0.667))  // #ADB9AA
+    static let paper = dynamic(light: (0.933, 0.929, 0.925),   // #EEEDEC 中性灰
+                               dark:  (0.086, 0.084, 0.090))
+    static let skyTop = dynamic(light: (0.957, 0.953, 0.949),
+                                dark:  (0.110, 0.108, 0.116))
+    static let skyBottom = dynamic(light: (0.890, 0.888, 0.892),
+                                   dark:  (0.069, 0.067, 0.074))
+    static let ink = dynamic(light: (0.180, 0.176, 0.171),     // #2E2D2C
+                             dark:  (0.933, 0.925, 0.914))
+    static let accent = dynamic(light: (0.451, 0.494, 0.463),  // #737E76
+                                dark:  (0.671, 0.714, 0.671))
     /// 实心按钮的底色：比 accent 更深一档，保证浅色文字的对比度
-    static let accentFill = dynamic(light: (0.365, 0.412, 0.373),  // #5D6960
-                                    dark:  (0.678, 0.725, 0.667))
+    static let accentFill = dynamic(light: (0.357, 0.400, 0.373),  // #5B665F
+                                    dark:  (0.671, 0.714, 0.671))
     static let danger = dynamic(light: (0.600, 0.349, 0.322),  // #995956 灰砖红
                                 dark:  (0.541, 0.310, 0.286))  // #8A4F49
     /// 红底上的字：不跟深色模式翻，否则会变成深底深字
     static let onDanger = Color(red: 0.957, green: 0.945, blue: 0.918)
 
     // 三团雾：只用来铺气氛，不承载信息
-    static let hazeRose = dynamic(light: (0.847, 0.769, 0.741),  // 灰玫瑰
-                                  dark:  (0.286, 0.208, 0.216))
-    static let hazeBlue = dynamic(light: (0.729, 0.780, 0.808),  // 灰蓝
-                                  dark:  (0.180, 0.220, 0.263))
-    static let hazeSage = dynamic(light: (0.769, 0.800, 0.741),  // 雾绿
-                                  dark:  (0.196, 0.239, 0.192))
+    static let hazeRose = dynamic(light: (0.898, 0.847, 0.835),  // 灰玫瑰
+                                  dark:  (0.290, 0.235, 0.243))
+    static let hazeBlue = dynamic(light: (0.827, 0.859, 0.878),  // 灰蓝
+                                  dark:  (0.196, 0.224, 0.251))
+    static let hazeSage = dynamic(light: (0.851, 0.878, 0.843),  // 雾绿
+                                  dark:  (0.208, 0.239, 0.204))
+    /// 雾的整体浓度
+    static let hazeStrength: Double = 0.75
 
     /// 面板背后压暗用：深色模式下必须用黑，否则会变成一层发光的纱
     static let scrim = Color(UIColor { trait in
@@ -58,24 +60,24 @@ enum Theme {
     static var inkUIColor: UIColor {
         UIColor { trait in
             trait.userInterfaceStyle == .dark
-            ? UIColor(red: 0.902, green: 0.886, blue: 0.867, alpha: 1)
-            : UIColor(red: 0.227, green: 0.216, blue: 0.204, alpha: 1)
+            ? UIColor(red: 0.933, green: 0.925, blue: 0.914, alpha: 1)
+            : UIColor(red: 0.180, green: 0.176, blue: 0.171, alpha: 1)
         }
     }
 
     static var accentUIColor: UIColor {
         UIColor { trait in
             trait.userInterfaceStyle == .dark
-            ? UIColor(red: 0.678, green: 0.725, blue: 0.667, alpha: 1)
-            : UIColor(red: 0.463, green: 0.514, blue: 0.463, alpha: 1)
+            ? UIColor(red: 0.671, green: 0.714, blue: 0.671, alpha: 1)
+            : UIColor(red: 0.451, green: 0.494, blue: 0.463, alpha: 1)
         }
     }
 
     static var placeholderUIColor: UIColor {
         UIColor { trait in
             trait.userInterfaceStyle == .dark
-            ? UIColor(red: 0.902, green: 0.886, blue: 0.867, alpha: 0.30)
-            : UIColor(red: 0.227, green: 0.216, blue: 0.204, alpha: 0.30)
+            ? UIColor(red: 0.933, green: 0.925, blue: 0.914, alpha: 0.38)
+            : UIColor(red: 0.180, green: 0.176, blue: 0.171, alpha: 0.38)
         }
     }
 
@@ -145,22 +147,22 @@ private struct SubmitButton: View {
 
             // 磨砂环
             Circle()
-                .fill(.ultraThinMaterial)
-                .frame(width: 72, height: 72)
-                .overlay(
-                    Circle().strokeBorder(Theme.accent.opacity(active ? 0.40 : 0.20),
-                                          lineWidth: 0.8)
-                )
+                .fill(Color.clear)
+                .frame(width: 78, height: 78)
+                .inkGlass(Circle())
 
             Circle()
-                .fill(active ? Theme.accentFill : Theme.ink.opacity(0.66))
-                .frame(width: 46, height: 46)
-                .scaleEffect(active ? 1 : 0.92)
+                .fill(active ? Theme.accentFill : Color.white.opacity(0.22))
+                .frame(width: 48, height: 48)
+                .overlay(
+                    Circle().strokeBorder(Color.white.opacity(active ? 0.28 : 0.78), lineWidth: 0.8)
+                )
+                .scaleEffect(active ? 1 : 0.96)
                 .shadow(color: Theme.accent.opacity(active ? 0.40 : 0), radius: 12, y: 3)
 
             Image(systemName: "arrow.right")
                 .font(.system(size: 15, weight: .medium))
-                .foregroundColor(Theme.paper)
+                .foregroundColor(active ? Theme.paper : Theme.ink.opacity(0.55))
         }
         .contentShape(Circle())
         .gesture(
@@ -205,20 +207,22 @@ struct HazeBackground: View {
                                startPoint: .topLeading,
                                endPoint: .bottomTrailing)
 
-                haze(Theme.hazeRose, diameter: w * 1.20)
+                haze(Theme.hazeRose, diameter: w * 1.75)
                     .offset(x: -w * 0.36 + (drifting ? w * 0.09 : 0),
                             y: -h * 0.34 + (drifting ? h * 0.10 : 0))
-                    .opacity(0.88 + emphasis * 0.12)
+                    .opacity(Theme.hazeStrength * (0.88 + emphasis * 0.12))
                     .scaleEffect(1 + emphasis * 0.04)
                     .animation(.spring(response: 0.9, dampingFraction: 0.9), value: emphasis)
 
-                haze(Theme.hazeBlue, diameter: w * 1.10)
+                haze(Theme.hazeBlue, diameter: w * 1.60)
                     .offset(x: w * 0.40 - (drifting ? w * 0.11 : 0),
                             y: -h * 0.02 + (drifting ? h * 0.14 : 0))
+                    .opacity(Theme.hazeStrength)
 
-                haze(Theme.hazeSage, diameter: w * 1.00)
+                haze(Theme.hazeSage, diameter: w * 1.50)
                     .offset(x: -w * 0.14 + (drifting ? w * 0.15 : 0),
                             y: h * 0.36 - (drifting ? h * 0.11 : 0))
+                    .opacity(Theme.hazeStrength)
 
                 // 四周压一点点，中间透气
                 RadialGradient(colors: [.clear,
@@ -448,6 +452,14 @@ struct ContentView: View {
     @State private var screen: Screen = .search
     @State private var message: String? = nil
     @State private var showSettings = false
+
+    /// 背景线主题 + 列表滚动量（喂给背景做视差）
+    @AppStorage("inkTheme") private var inkThemeRaw = InkLineTheme.ridge.rawValue
+    @State private var scrollOffset: CGFloat = 0
+
+    private var inkTheme: InkLineTheme {
+        InkLineTheme(rawValue: inkThemeRaw) ?? .ridge
+    }
     @State private var pendingWeb: PendingWeb? = nil
     @State private var showClearConfirm = false
 
@@ -508,7 +520,9 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            HazeBackground(emphasis: keywordFocused ? 1 : 0)
+            InkBackground(theme: inkTheme,
+                          parallax: scrollOffset * 0.22,
+                          emphasis: keywordFocused ? 1 : 0)
                 .contentShape(Rectangle())
                 .onTapGesture { dismissKeyboard() }
 
@@ -578,6 +592,10 @@ struct ContentView: View {
         }
         .coordinateSpace(name: "root")
         .onPreferenceChange(AnchorFrames.self) { anchors = $0 }
+        .onPreferenceChange(ScrollOffsetKey.self) { value in
+            scrollOffset = min(max(value, 0), 420)
+        }
+        .onChange(of: screen) { _ in scrollOffset = 0 }
         .animation(animate(Motion.quick), value: message)
         .animation(animate(Motion.page), value: showSettings)
         .animation(reduceMotion ? nil : Motion.panel, value: showPanel)
@@ -636,6 +654,13 @@ struct ContentView: View {
 
     private var header: some View {
         HStack {
+            if screen == .search {
+                Text("MINDSEARCH")
+                    .font(.system(size: 11, weight: .semibold))
+                    .tracking(2.8)
+                    .foregroundColor(Theme.ink.opacity(0.60))
+            }
+
             if screen != .search {
                 Button {
                     dismissKeyboard()
@@ -834,12 +859,16 @@ struct ContentView: View {
         Button {
             toggleVoice()
         } label: {
-            Image(systemName: voice.isRecording ? "stop.fill" : "mic")
-                .font(.system(size: 14, weight: .regular))
-                .foregroundColor(voice.isRecording ? Theme.paper : Theme.accent)
-                .frame(width: 42, height: 42)
-                .background(Circle().fill(voice.isRecording ? Theme.accentFill : Color.clear))
-                .overlay(Circle().stroke(Theme.accent.opacity(0.35), lineWidth: 0.8))
+            ZStack {
+                if voice.isRecording {
+                    Circle().fill(Theme.accentFill)
+                }
+                Image(systemName: voice.isRecording ? "stop.fill" : "mic")
+                    .font(.system(size: 15, weight: .regular))
+                    .foregroundColor(voice.isRecording ? Theme.paper : Theme.ink.opacity(0.66))
+            }
+            .frame(width: 54, height: 54)
+            .inkGlass(Circle())
         }
         .buttonStyle(PressableStyle())
         .accessibilityLabel(voice.isRecording ? "停止语音输入" : "语音输入")
@@ -979,7 +1008,9 @@ struct ContentView: View {
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 18)
+            .trackScrollOffset(in: "list")
         }
+        .coordinateSpace(name: "list")
     }
 
     private func ideaCard(_ idea: IdeaItem) -> some View {
@@ -1033,15 +1064,7 @@ struct ContentView: View {
         .padding(.horizontal, 18)
         .padding(.top, 17)
         .padding(.bottom, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: Theme.shadow, radius: editing ? 18 : 10, y: editing ? 8 : 4)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(Theme.hairline, lineWidth: 0.8)
-        )
+        .inkGlass(RoundedRectangle(cornerRadius: 20, style: .continuous), strong: editing)
         .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .onTapGesture {
             if !editing { beginIdeaEdit(idea) }
@@ -1105,7 +1128,9 @@ struct ContentView: View {
             }
             .padding(.horizontal, 28)
             .padding(.vertical, 18)
+            .trackScrollOffset(in: "list")
         }
+        .coordinateSpace(name: "list")
     }
 
     private struct HistoryGroup {
@@ -1134,7 +1159,7 @@ struct ContentView: View {
     // MARK: - 底部标签
 
     private var tabBar: some View {
-        HStack(spacing: 72) {
+        HStack(spacing: 0) {
             ForEach(Screen.secondary) { item in
                 let selected = screen == item
                 Button {
@@ -1147,17 +1172,26 @@ struct ContentView: View {
                         screen = item
                     }
                 } label: {
-                    VStack(spacing: 5) {
-                        Circle()
-                            .fill(selected ? Theme.accentFill : Color.clear)
-                            .frame(width: 3, height: 3)
+                    HStack(spacing: 7) {
+                        Image(systemName: item == .ideas ? "lightbulb" : "clock")
+                            .font(.system(size: 13, weight: .regular))
                         Text(item.rawValue)
                             .font(Theme.mono(12))
-                            .foregroundColor(selected ? Theme.accentFill : Theme.ink.opacity(0.62))
                     }
-                    .frame(minWidth: 64)
-                    .padding(.vertical, 10)
-                    .contentShape(Rectangle())
+                    .foregroundColor(selected ? Theme.ink : Theme.ink.opacity(0.55))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 54)
+                    .background {
+                        if selected {
+                            Capsule()
+                                .fill(Color.white.opacity(0.40))
+                                .overlay(
+                                    Capsule().strokeBorder(Color.white.opacity(0.7), lineWidth: 0.8)
+                                )
+                                .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
+                        }
+                    }
+                    .contentShape(Capsule())
                 }
                 .buttonStyle(PressableStyle())
                 .anchorFrame(item == .ideas ? "ideasTab" : "historyTab")
@@ -1165,14 +1199,10 @@ struct ContentView: View {
                 .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 50)
-        .background(.ultraThinMaterial)
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(Theme.hairline)
-                .frame(height: 0.5)
-        }
+        .padding(6)
+        .inkGlass(Capsule())
+        .padding(.horizontal, 16)
+        .padding(.bottom, 6)
     }
 
     // MARK: - 解析
