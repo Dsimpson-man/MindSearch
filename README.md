@@ -39,7 +39,8 @@ SwiftUI 小工具：输入关键词（或直接说），选一个 App，跳到�
 - 列表左滑删除当前不生效（列表用的是 `ScrollView + LazyVStack`，`swipeActions` 只在 `List` 内有效），请用长按菜单删除。
 - 回车在同一手势下有两种结果（搜索 / 存为想法），由字数阈值决定且事前不可见；可见化改造排期见 [`docs/UI-REVIEW.md`](docs/UI-REVIEW.md)。
 - 完整的评审、优先级与落地排期见 [`docs/UI-REVIEW.md`](docs/UI-REVIEW.md)。
-- **下一版要改什么、怎么改、怎么验收，见 [`docs/CHANGE-SPEC-v2.2.md`](docs/CHANGE-SPEC-v2.2.md)。**
+- **下一版要改什么、怎么改、怎么验收，见 [`docs/CHANGE-SPEC-v3.md`](docs/CHANGE-SPEC-v3.md)。**
+- 想保留现在的底部 tab 结构，只看细节改造，见 [`docs/CHANGE-SPEC-v2.2.md`](docs/CHANGE-SPEC-v2.2.md)。
 - DeepSeek 的 `dpsk://` 只能唤起 App，不能带文本（「问问 DeepSeek」是 App Intent，不是 URL scheme），已改成剪贴板模式。
 - 剪贴板模式需要你进 App 后手动长按粘贴，iOS 不允许跨 App 自动粘贴。
 - 锁屏组件点击后需要解锁，无法在锁屏状态下直接完成跳转。
