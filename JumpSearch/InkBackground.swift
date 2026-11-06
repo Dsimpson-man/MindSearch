@@ -13,6 +13,12 @@ struct InkBackground: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// 四团墨晕各走各的周期：26 / 34 / 30 / 38 秒，错开之后不会同步呼吸
+    @State private var breathA: CGFloat = 0
+    @State private var breathB: CGFloat = 0
+    @State private var breathC: CGFloat = 0
+    @State private var breathD: CGFloat = 0
+
     private var dark: Bool { scheme == .dark }
 
     private static let artSize = CGSize(width: 390, height: 844)
@@ -41,6 +47,15 @@ struct InkBackground: View {
             .clipped()
         }
         .ignoresSafeArea()
+        .onAppear { startBreathing() }
+    }
+
+    private func startBreathing() {
+        guard !reduceMotion else { return }
+        withAnimation(.easeInOut(duration: 26).repeatForever(autoreverses: true)) { breathA = 1 }
+        withAnimation(.easeInOut(duration: 34).repeatForever(autoreverses: true)) { breathB = 1 }
+        withAnimation(.easeInOut(duration: 30).repeatForever(autoreverses: true)) { breathC = 1 }
+        withAnimation(.easeInOut(duration: 38).repeatForever(autoreverses: true)) { breathD = 1 }
     }
 
     // MARK: - 纸
@@ -65,9 +80,13 @@ struct InkBackground: View {
         ZStack(alignment: .topLeading) {
             washes
             lines
+                // 换主题时整套线从纸里洇出来：旧的一套淡出、新的一套淡入
+                .id(theme)
+                .transition(.opacity)
         }
         .frame(width: Self.artSize.width, height: Self.artSize.height,
                alignment: .topLeading)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.62), value: theme)
     }
 
     private var washes: some View {
@@ -75,18 +94,26 @@ struct InkBackground: View {
             wash(width: 820, height: 560, x: -340, y: -260, rotation: -16,
                  color: inkWash(0.26, warm: true),
                  core: 0.40, ring: (0.58, 0.68, 0.78), ringAlpha: 0.075)
+                .scaleEffect(1 + breathA * 0.055)
+                .offset(x: breathA * 14, y: breathA * -12)
 
             wash(width: 700, height: 460, x: -10, y: 330, rotation: 14,
                  color: inkWash(0.22, warm: false),
                  core: 0.42, ring: (0.56, 0.68, 0.79), ringAlpha: 0.065)
+                .scaleEffect(1 + breathB * 0.05)
+                .offset(x: breathB * -16, y: breathB * 10)
 
             wash(width: 760, height: 620, x: -320, y: 544, rotation: -8,
                  color: inkWash(0.20, warm: true),
                  core: 0.42, ring: (0.58, 0.70, 0.80), ringAlpha: 0.06)
+                .scaleEffect(1 + breathC * 0.065)
+                .offset(x: breathC * 10, y: breathC * -14)
 
             wash(width: 540, height: 420, x: 40, y: 464, rotation: -6,
                  color: inkWash(0.11, warm: false),
                  core: 0.48, ring: nil, ringAlpha: 0)
+                .scaleEffect(1 + breathD * 0.05)
+                .offset(x: breathD * -8, y: breathD * 10)
 
             // 一道横过纸面的飞白笔触
             Capsule()
@@ -101,7 +128,7 @@ struct InkBackground: View {
                 .frame(width: 520, height: 210)
                 .blur(radius: 10)
                 .rotationEffect(.degrees(-9))
-                .offset(x: -60, y: 300)
+                .offset(x: -60 + breathC * 16, y: 300 - breathC * 8)
                 .opacity(0.9)
         }
     }

@@ -121,6 +121,7 @@ struct SettingsView: View {
                         }
                     }
                     .buttonStyle(PressableStyle())
+                    .animation(Motion.quick, value: inkThemeRaw == theme.rawValue)
                     .accessibilityLabel("背景线 \(theme.title)")
                     .accessibilityAddTraits(inkThemeRaw == theme.rawValue ? [.isSelected] : [])
                 }

@@ -456,6 +456,8 @@ struct ContentView: View {
     /// 背景线主题 + 列表滚动量（喂给背景做视差）
     @AppStorage("inkTheme") private var inkThemeRaw = InkLineTheme.ridge.rawValue
     @State private var scrollOffset: CGFloat = 0
+    /// 列表逐条进场：切页时先归零，再统一抬起来
+    @State private var listShown = false
 
     private var inkTheme: InkLineTheme {
         InkLineTheme(rawValue: inkThemeRaw) ?? .ridge
@@ -595,7 +597,14 @@ struct ContentView: View {
         .onPreferenceChange(ScrollOffsetKey.self) { value in
             scrollOffset = min(max(value, 0), 420)
         }
-        .onChange(of: screen) { _ in scrollOffset = 0 }
+        .onChange(of: screen) { newScreen in
+            scrollOffset = 0
+            listShown = false
+            guard newScreen != .search else { return }
+            DispatchQueue.main.async {
+                withAnimation(animate(Motion.page)) { listShown = true }
+            }
+        }
         .animation(animate(Motion.quick), value: message)
         .animation(animate(Motion.page), value: showSettings)
         .animation(reduceMotion ? nil : Motion.panel, value: showPanel)
@@ -1002,8 +1011,16 @@ struct ContentView: View {
                 if store.ideas.isEmpty {
                     emptyState("还没有想法。\n写得长一点，右下角会出现「存为想法」。")
                 }
-                ForEach(store.ideas) { idea in
+                ForEach(Array(store.ideas.enumerated()), id: \.element.id) { index, idea in
                     ideaCard(idea)
+                        .opacity(listShown ? 1 : 0)
+                        .offset(y: listShown ? 0 : 12)
+                        .animation(
+                            reduceMotion ? nil
+                                : .spring(response: 0.52, dampingFraction: 0.92)
+                                    .delay(Double(min(index, 8)) * 0.045),
+                            value: listShown
+                        )
                 }
             }
             .padding(.horizontal, 24)
@@ -1099,15 +1116,22 @@ struct ContentView: View {
                     emptyState("搜过的内容会安静地留在这里。")
                 }
 
-                ForEach(historyGroups, id: \.title) { group in
+                ForEach(Array(historyGroups.enumerated()), id: \.element.title) { groupIndex, group in
                     Text(group.title)
                         .font(Theme.mono(9))
                         .tracking(1.8)
                         .foregroundColor(Theme.faded)
                         .padding(.top, 20)
                         .padding(.bottom, 4)
+                        .opacity(listShown ? 1 : 0)
+                        .animation(
+                            reduceMotion ? nil
+                                : .spring(response: 0.5, dampingFraction: 0.92)
+                                    .delay(Double(min(groupIndex * 3, 9)) * 0.04),
+                            value: listShown
+                        )
 
-                    ForEach(group.items) { h in
+                    ForEach(Array(group.items.enumerated()), id: \.element.id) { itemIndex, h in
                         SwipeRow(onDelete: { deleteHistory(h) }) {
                             listRow(h.text, trailing: h.app)
                         }
@@ -1122,6 +1146,14 @@ struct ContentView: View {
                         .contextMenu {
                             Button("删除", role: .destructive) { deleteHistory(h) }
                         }
+                        .opacity(listShown ? 1 : 0)
+                        .offset(y: listShown ? 0 : 10)
+                        .animation(
+                            reduceMotion ? nil
+                                : .spring(response: 0.5, dampingFraction: 0.92)
+                                    .delay(Double(min(groupIndex * 3 + itemIndex, 9)) * 0.04),
+                            value: listShown
+                        )
                         .transition(.opacity)
                     }
                 }
