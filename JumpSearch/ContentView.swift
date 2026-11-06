@@ -287,6 +287,8 @@ struct HazeBackground: View {
 struct IdeaItem: Identifiable, Codable {
     var id = UUID()
     var text: String
+    /// 存下的时间。Optional 是为了让 v3.3 之前存的想法还能解码（缺 key 时是 nil）
+    var date: Date? = nil
 }
 
 struct HistoryItem: Identifiable, Codable {
@@ -466,6 +468,8 @@ struct ContentView: View {
     @State private var showClearConfirm = false
 
     @State private var showPanel = false
+    /// 面板标题：记录复搜是「换个应用」，想法去搜是「去哪儿搜」
+    @State private var panelTitle = "换个应用"
     @State private var panelKeyword = ""
     @State private var panelKeywordHeight: CGFloat = 38
     @State private var panelApp = ""
@@ -909,7 +913,7 @@ struct ContentView: View {
                     })
 
                 HStack {
-                    Text("换个应用")
+                    Text(panelTitle)
                         .font(Theme.serif(17))
                         .foregroundColor(Theme.ink)
                     Spacer()
@@ -931,6 +935,8 @@ struct ContentView: View {
                     )
                     .frame(height: 38)
                 }
+
+                panelAppChips
 
                 multilineLine("搜索", size: 16, labelTop: panelKeywordLabelTop, active: panelKeywordFocused) {
                     GrowingTextView(
@@ -1005,6 +1011,12 @@ struct ContentView: View {
 
     // MARK: - 想法（卡片，就地编辑）
 
+    /// 想法卡左下角的日期，只到「月.日」
+    private func shortDate(_ date: Date) -> String {
+        let c = Calendar.current.dateComponents([.month, .day], from: date)
+        return "\(c.month ?? 0).\(c.day ?? 0)"
+    }
+
     private var ideasList: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 12) {
@@ -1058,7 +1070,12 @@ struct ContentView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            HStack(spacing: 10) {
+            HStack(spacing: 12) {
+                if let date = idea.date {
+                    Text(shortDate(date))
+                        .font(Theme.mono(10))
+                        .foregroundColor(Theme.faded)
+                }
                 Spacer(minLength: 0)
                 if editing {
                     Button("完成") { commitIdeaEdit() }
@@ -1069,10 +1086,29 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "trash")
                             .font(.system(size: 11))
-                            .frame(width: 32, height: 26)
+                            .frame(width: 30, height: 26)
                             .contentShape(Rectangle())
                     }
                     .accessibilityLabel("删除这条想法")
+
+                    // 想法本身只是存着，点这里才决定去哪搜——这是它和记录的区别
+                    Button {
+                        openPanel(keyword: idea.text, app: nil, title: "去哪儿搜")
+                    } label: {
+                        HStack(spacing: 3) {
+                            Text("去搜")
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 8, weight: .semibold))
+                        }
+                        .font(Theme.mono(10))
+                        .foregroundColor(Theme.accentFill)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(Theme.accent.opacity(0.13)))
+                        .contentShape(Capsule())
+                    }
+                    .buttonStyle(PressableStyle())
+                    .accessibilityLabel("用这条想法去搜索")
                 }
             }
             .font(Theme.mono(10))
@@ -1359,7 +1395,7 @@ struct ContentView: View {
         guard !trimmed.isEmpty else { return }
 
         withAnimation(animate(Motion.quick)) {
-            store.ideas.insert(IdeaItem(text: trimmed), at: 0)
+            store.ideas.insert(IdeaItem(text: trimmed, date: Date()), at: 0)
             keyword = ""
         }
         UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -1444,8 +1480,81 @@ struct ContentView: View {
 
     // MARK: - 面板动作
 
-    private func openPanel(keyword text: String, app: String?) {
+    /// 「去搜」里先给一排常去的应用，点一下直接搜，不用记别名
+    private var panelAppOptions: [String] {
+        var names: [String] = []
+        if store.useDefaultApp, !store.defaultAppName.isEmpty {
+            names.append(store.defaultAppName)
+        }
+        for name in recentApps where !names.contains(name) {
+            names.append(name)
+        }
+        for name in ["小红书", "哔哩哔哩"]
+        where destinations.contains(where: { $0.name == name }) && !names.contains(name) {
+            names.append(name)
+        }
+        return Array(names.prefix(5))
+    }
+
+    @ViewBuilder
+    private var panelAppChips: some View {
+        if !panelAppOptions.isEmpty {
+            HStack(spacing: 10) {
+                Text("常去")
+                    .font(Theme.mono(10))
+                    .foregroundColor(Theme.faded)
+
+                // 名字长短不一，横着放不下就滑，不挤成一团
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(panelAppOptions, id: \.self) { name in
+                            let selected = panelApp == name
+                            Button {
+                                panelPick(name)
+                            } label: {
+                                Text(name)
+                                    .font(Theme.mono(11))
+                                    .foregroundColor(selected ? Theme.paper : Theme.accentFill)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(
+                                        Capsule().fill(
+                                            selected
+                                                ? AnyShapeStyle(Theme.accentFill)
+                                                : AnyShapeStyle(Theme.accent.opacity(0.12))
+                                        )
+                                    )
+                                    .contentShape(Capsule())
+                            }
+                            .buttonStyle(PressableStyle())
+                            .accessibilityLabel("用 \(name) 搜索")
+                        }
+                    }
+                }
+                .frame(height: 28)
+            }
+            .padding(.leading, 56)
+        }
+    }
+
+    private func panelPick(_ name: String) {
+        UISelectionFeedbackGenerator().selectionChanged()
+        panelApp = name
+        panelAppFocused = false
+
+        let text = panelKeyword.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else {
+            panelKeywordFocused = true
+            return
+        }
+        guard let d = resolveApp(name) else { return }
+        closePanel()
+        search(d, text)
+    }
+
+    private func openPanel(keyword text: String, app: String?, title: String = "换个应用") {
         dismissKeyboard()
+        panelTitle = title
         panelKeyword = text
         panelKeywordHeight = panelKeywordMinHeight
         panelApp = app ?? ""
