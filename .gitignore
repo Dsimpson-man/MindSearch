@@ -4,5 +4,16 @@ DerivedData/
 xcuserdata/
 .DS_Store
 
+# Xcode 产物
+*.xcarchive
+*.ipa
+*.dSYM
+.swiftpm/
+.build/
+
 # 本地设计实验截图
 previews/
+
+# 本地私有配置（不要提交签名证书、账号信息）
+*.xcconfig.local
+Secrets.swift

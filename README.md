@@ -1,6 +1,11 @@
 # MindSearch（一键搜索）
 
-SwiftUI 小工具：输入关键词（或直接说），选一个 App，跳到它的搜索结果。想法和搜索记录存在本地。**v1.1 起带主屏和锁屏小组件。**
+SwiftUI 小工具：输入关键词（或直接说），选一个 App，跳到它的搜索结果。想法和搜索记录存在本地。**带主屏和锁屏小组件。**
+
+> **项目状态：已停止功能迭代（v3.4.0，2026-11）。**
+> 这是一个能跑、能用的完整原生 App，但不打算商业化——同类产品在 App Store 上的评分只有个位数，这个品类的需求比预想的薄。
+> 开源出来，作为「从想法到上架级 App」的能力证明。完整复盘见 [docs/POSTMORTEM.md](docs/POSTMORTEM.md)。
+> 许可：MIT。
 
 ## 视觉：水墨玻璃（v3.2）
 
@@ -52,7 +57,7 @@ SwiftUI 小工具：输入关键词（或直接说），选一个 App，跳到�
 - DeepSeek 的 `dpsk://` 只能唤起 App，不能带文本（「问问 DeepSeek」是 App Intent，不是 URL scheme），已改成剪贴板模式。
 - 剪贴板模式需要你进 App 后手动长按粘贴，iOS 不允许跨 App 自动粘贴。
 - 锁屏组件点击后需要解锁，无法在锁屏状态下直接完成跳转。
-- 仓库里的截图还是 v1 的三 tab 界面，与当前版本不一致，待重拍。
+- `docs/archive/screenshots/` 里是 v1–v2 的历史截图，界面已和当前版本不一致，仅作存档。
 
 ## 界面
 
@@ -140,8 +145,22 @@ xcodebuild -project JumpSearch.xcodeproj -scheme JumpSearch -sdk iphonesimulator
 
 用 `-scheme`（不要用 `-target`），这样 Xcode 会自动先编 widget extension 再嵌入主 App。
 
-## Roadmap
+## 项目状态
 
-- [ ] 真机逐条验证所有第三方深链，失效的改成网页兜底或只唤起 App
-- [ ] 小组件支持用户自己选固定哪 4 个应用（现在跟着「最近使用」走）
+**v3.4.0 是最后一个功能版本**，之后只接受 bug 修复，不再加新功能。
+
+已完成：一句话搜索、23 个应用的深链、语音输入、想法卡片、搜索记录、主屏 / 锁屏小组件、六套水墨背景线、深色模式、减弱动态效果适配。
+
+未完成，也不打算做：
+
+- [ ] 真机逐条验证全部第三方深链（清单见 [docs/DEVICE-CHECKLIST.md](docs/DEVICE-CHECKLIST.md)，可自行过一遍）
+- [ ] 小组件固定显示哪 4 个应用（现在跟着「最近使用」走）
 - [ ] 想法 / 记录同步到 iCloud（现在只在本地）
+
+为什么停在这里，以及我查到的市场数据：见 [docs/POSTMORTEM.md](docs/POSTMORTEM.md)。
+
+## 许可
+
+MIT，见 [LICENSE](LICENSE)。随便改、随便用、随便卖，不用署名。
+
+第三方 App 的 URL scheme 是各自的私有约定，可能随版本升级失效，本项目对此不做保证。仓库里的 Team ID / Bundle ID 是我的，你要真机运行请换成自己的。
